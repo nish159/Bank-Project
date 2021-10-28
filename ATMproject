@@ -1,0 +1,306 @@
+using System;
+
+namespace ATMProject
+{
+    class ATM
+    {
+        static void Main(string[] args)
+        {
+            language();
+
+            Console.ReadKey();
+        }
+
+        static void language()
+        {
+            Console.WriteLine("SELECT A LANGUAGE:\n1. ENGLISH\n2. SPANISH");
+            var languageOption = int.Parse(Console.ReadLine());
+
+            if (languageOption == 1)
+            {
+                Console.WriteLine("WELCOME TO CYBERBANK\n");
+                pin();
+
+                Console.WriteLine("WHAT WOULD YOU LIKE TO DO TODAY?");
+                mainMenu();
+            }
+            else
+            {
+                Console.WriteLine("BIENVENIDO A CYBERBANK\n");
+                pinS();
+
+                Console.WriteLine("QUE TE GUSTARIA HACER HOY?");
+                mainMenuS();
+            }
+        }
+
+        static void pin()
+        {
+
+            var pin = "";
+
+            while (pin != "1234")
+            {
+                Console.WriteLine("PLEASE ENTER YOUR PIN: ");
+                pin = Console.ReadLine();
+
+                if (pin == "1234")
+                {
+                    Console.WriteLine("\nAUTHENTICATED\n");
+                }
+                else
+                {
+                    Console.WriteLine("\nNOT AUTHENTICATED\n");
+                }
+            }
+        }
+
+        static void pinS()
+        {
+            var pinS = "";
+
+            while (pinS != "1234")
+            {
+                Console.WriteLine("INTRODUCE TU PIN: ");
+                pinS = Console.ReadLine();
+
+                if (pinS == "1234")
+                {
+                    Console.WriteLine("\nAUTENTICADO");
+                }
+                else
+                {
+                    Console.WriteLine("\nSIN AUTENTICADO");
+                }
+            }
+        }
+
+        static void mainMenu()
+        {
+            Console.WriteLine("\nMAIN MENU");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("1. CHECK BALANCE");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("2. DEPOSIT");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("3. WITHDRAW");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("4. TERMINATE TRANSACTION");
+
+            var options = int.Parse(Console.ReadLine());
+
+            switch (options)
+            {
+                case 1:
+                    balance();
+                    break;
+                case 2:
+                    deposit();
+                    break;
+                case 3:
+                    withdraw();
+                    break;
+                case 4:
+                    exit();
+                    break;
+            }
+        }
+
+        static void mainMenuS()
+        {
+            Console.WriteLine("\nMENU PRINCIPAL");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("1. COMPROBAR SALDO");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("2. DEPOSITO");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("3. RETIRAR");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("4. FINALIZAR TRANSACCION");
+
+            var optionsS = int.Parse(Console.ReadLine());
+
+            switch (optionsS)
+            {
+                case 1:
+                    balanceS();
+                    break;
+                case 2:
+                    depositS();
+                    break;
+                case 3:
+                    withdrawS();
+                    break;
+                case 4:
+                    exitS();
+                    break;
+
+            }
+        }
+
+        static void balance()
+        {
+            var amount = 500;
+
+            var answer = "";
+
+            Console.WriteLine("YOUR CURRENT BALANCE IS: {0}\n", amount);
+            Console.WriteLine("WOULD YOU LIKE TO MAKE ANOTHER TRANSACTION? ");
+            answer = Console.ReadLine();
+
+            if (answer == "y")
+            {
+                mainMenu();
+            }
+            else if (answer == "n")
+            {
+                exit();
+            }
+            else
+            {
+                exit();
+            }
+        }
+
+        static void balanceS()
+        {
+            var amountS = 500;
+
+            var answerS = "";
+
+            Console.WriteLine("SU SALDO ACTUAL ES: {0}\n", amountS);
+            Console.WriteLine("DESEA REALIZR OTRA TRANSACCION");
+            answerS = Console.ReadLine();
+
+            if (answerS == "y")
+            {
+                mainMenuS();
+            }
+            else if (answerS == "n")
+            {
+                exitS();
+            }
+            else
+            {
+                exitS();
+            }
+        }
+
+        static void deposit()
+        {
+            var amount = 500.00;
+
+            Console.WriteLine("HOW MUCH YOU WOULD LIKE TO DEPOSIT? ");
+            var depoistAmount = double.Parse(Console.ReadLine());
+
+            Console.WriteLine("YOUR NEW BALANCE IS: {0}", amount + depoistAmount);
+            exit();
+            
+        }
+
+        static void depositS()
+        {
+            var amountS = 500.00;
+
+            Console.WriteLine("CUANTO LE GUSTARIA DEPOSITAR? ");
+            var depositAmountS = double.Parse(Console.ReadLine());
+
+            Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS + depositAmountS);
+            exitS();
+        }
+
+        static void withdraw()
+        {
+            var amount = 500;
+
+            Console.WriteLine("HOW MUCH YOU WOULD LIKE TO WITHDRAW? ");
+            Console.WriteLine("1. $20");
+            Console.WriteLine("2. $40");
+            Console.WriteLine("3. $60");
+            Console.WriteLine("4. $80");
+            Console.WriteLine("5. $100");
+            Console.WriteLine("6. RETURN TO MAIN MENU");
+
+            var withdrawOption = int.Parse(Console.ReadLine());
+
+            switch (withdrawOption)
+            {
+                case 1:
+                    Console.WriteLine("YOUR NEW BALANCE IS: {0}", amount - 20);
+                    withdraw();
+                    break;
+                case 2:
+                    Console.WriteLine("YOUR NEW BALANCE IS: {0}", amount - 40);
+                    exit();
+                    break;
+                case 3:
+                    Console.WriteLine("YOUR NEW BALANCE IS: {0}", amount - 60);
+                    exit();
+                    break;
+                case 4:
+                    Console.WriteLine("YOUR NEW BALANCE IS: {0}", amount - 80);
+                    exit();
+                    break;
+                case 5:
+                    Console.WriteLine("YOUR NEW BALANCE IS: {0}", amount - 100);
+                    exit();
+                    break;
+                default:
+                    exit();
+                    break;
+            }
+        }
+
+        static void withdrawS()
+        {
+            var amountS = 500;
+
+            Console.WriteLine("CUANTO LE GUSTARIA RETIRAR? ");
+            Console.WriteLine("1. $20");
+            Console.WriteLine("2. $40");
+            Console.WriteLine("3. $60");
+            Console.WriteLine("4. $80");
+            Console.WriteLine("5. $100");
+            Console.WriteLine("6. VOLVER AL MENU PRINCIPAL");
+
+            var withdrawOptionS = int.Parse(Console.ReadLine());
+
+            switch (withdrawOptionS)
+            {
+                case 1:
+                    Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 20);
+                    exitS();
+                    break;
+                case 2:
+                    Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 40);
+                    exitS();
+                    break;
+                case 3:
+                    Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 60);
+                    exitS();
+                    break;
+                case 4:
+                    Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 80);
+                    exitS();
+                    break;
+                case 5:
+                    Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 100);
+                    exitS();
+                    break;
+                default:
+                    exitS();
+                    break;
+            }
+        }
+
+        static void exit()
+        {
+            Console.WriteLine("THANK YOU FOR USING CYBERBANK GOODBYE.");
+        }
+
+        static void exitS()
+        {
+            Console.WriteLine("GRACIAS POR USAR EL ADIOS DE CYBERBANK.");
+        }
+    }
+}
