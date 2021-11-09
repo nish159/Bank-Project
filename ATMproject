@@ -1,3 +1,4 @@
+using dataAccess;
 using System;
 
 namespace ATMProject
@@ -6,9 +7,12 @@ namespace ATMProject
     {
         static void Main(string[] args)
         {
-            language();
+            //language();
 
-            Console.ReadKey();
+            IData dataAccount = new Data();
+            dataAccount.getAllAccountForUser();
+
+            //Console.ReadKey();
         }
 
         static void language()
@@ -66,11 +70,11 @@ namespace ATMProject
 
                 if (pinS == "1234")
                 {
-                    Console.WriteLine("\nAUTENTICADO");
+                    Console.WriteLine("\nAUTENTICADO\n");
                 }
                 else
                 {
-                    Console.WriteLine("\nSIN AUTENTICADO");
+                    Console.WriteLine("\nSIN AUTENTICADO\n");
                 }
             }
         }
@@ -169,7 +173,7 @@ namespace ATMProject
             var answerS = "";
 
             Console.WriteLine("SU SALDO ACTUAL ES: {0}\n", amountS);
-            Console.WriteLine("DESEA REALIZR OTRA TRANSACCION");
+            Console.WriteLine("DESEA REALIZR OTRA TRANSACCION?");
             answerS = Console.ReadLine();
 
             if (answerS == "y")
@@ -227,7 +231,7 @@ namespace ATMProject
             {
                 case 1:
                     Console.WriteLine("YOUR NEW BALANCE IS: {0}", amount - 20);
-                    withdraw();
+                    exit();
                     break;
                 case 2:
                     Console.WriteLine("YOUR NEW BALANCE IS: {0}", amount - 40);
