@@ -202,6 +202,8 @@ namespace DataAccess
 
 namespace Models
 {
+    using System;
+    
     public class User
     {
         public string Id { get; set; }
