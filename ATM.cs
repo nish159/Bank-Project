@@ -20,7 +20,7 @@ namespace ATMProject
             string nombreUsuario;
             string contraseña = "";
 
-            Console.WriteLine("Select a language:\n1. English\n2. Spanish");
+            Console.WriteLine("Select a language:\n1. English\n2. Spanish\n");
             int languageOption = int.Parse(Console.ReadLine());
 
             if (languageOption == 1)
@@ -45,7 +45,7 @@ namespace ATMProject
 
                     if (password == user.Password)
                     {
-                        Console.WriteLine("\nUser Authenticated.\nWhat would you like to do today?");
+                        Console.WriteLine("\nUser Authenticated.\nWhat would you like to do today?\n");
                         mainMenu();
                     }
                     else
@@ -56,6 +56,7 @@ namespace ATMProject
             }
             else
             {
+                // Line of code to be executed when spanish option is selected
                 Console.WriteLine("Por favor introduzca su nombre de usuario: ");
                 nombreUsuario = Console.ReadLine();
 
@@ -70,17 +71,17 @@ namespace ATMProject
                 // Ask for the password and verify
                 while (contraseña != usuario.Password)
                 {
-                    Console.WriteLine("Por favor introduzca su contraseña ");
+                    Console.WriteLine("Por favor introduzca su contraseña: ");
                     contraseña = Console.ReadLine();
 
                     if (contraseña == usuario.Password)
                     {
-                        Console.WriteLine("\nUsuario autenticado.\nQué te gustaría hacer hoy?");
+                        Console.WriteLine("\nUsuario autenticado.\n¿Qué te gustaría hacer hoy?\n");
                         menúPrincipal();
                     }
                     else
                     {
-                        Console.WriteLine("\nContraseña incorrecta. Contraseña incorrecta: ");
+                        Console.WriteLine("\nContraseña incorrecta. Inténtalo de nuevo: ");
                     }
                 }
             }
@@ -241,7 +242,7 @@ namespace ATMProject
         static void mainMenu()
         {
             Console.WriteLine("------------------------------");
-            Console.WriteLine("\nMain Menu");
+            Console.WriteLine("Main Menu");
             Console.WriteLine("------------------------------");
             Console.WriteLine("1. Check Balance");
             Console.WriteLine("------------------------------");
@@ -250,7 +251,7 @@ namespace ATMProject
             Console.WriteLine("3. Withdraw");
             Console.WriteLine("------------------------------");
             Console.WriteLine("4. Terminate Transaction");
-            Console.WriteLine("------------------------------");
+            Console.WriteLine("------------------------------\n");
 
             int options = int.Parse(Console.ReadLine());
 
@@ -277,7 +278,7 @@ namespace ATMProject
         static void menúPrincipal()
         {
             Console.WriteLine("------------------------------");
-            Console.WriteLine("\nMenú principal");
+            Console.WriteLine("Menú principal");
             Console.WriteLine("------------------------------");
             Console.WriteLine("1. Consultar saldo");
             Console.WriteLine("------------------------------");
@@ -286,7 +287,7 @@ namespace ATMProject
             Console.WriteLine("3. Retirar");
             Console.WriteLine("------------------------------");
             Console.WriteLine("4. Terminar transacción");
-            Console.WriteLine("------------------------------");
+            Console.WriteLine("------------------------------\n");
 
             int opciones = int.Parse(Console.ReadLine());
 
@@ -336,37 +337,37 @@ namespace ATMProject
 
         static void equilibrio()
         {
-            var amountS = 500;
+            IAccountData accountAccessor = new AccountData();
 
-            var answerS = "";
+            int accountNumber;
 
-            Console.WriteLine("SU SALDO ACTUAL ES: {0}\n", amountS);
-            Console.WriteLine("DESEA REALIZR OTRA TRANSACCION?");
-            answerS = Console.ReadLine();
+            // Ask for the account number 
+            Console.WriteLine("Ingrese su número de cuenta: ");
+            accountNumber = int.Parse(Console.ReadLine());
 
-            if (answerS == "y")
+            // Verify the account number
+            Account account = accountAccessor.GetByAccountNumber(accountNumber);
+
+            if (account == null)
             {
-                menúPrincipal();
+                Console.WriteLine("Esta cuenta no existe.");
+                return;
             }
-            else if (answerS == "n")
-            {
-                salida();
-            }
-            else
-            {
-                salida();
-            }
+
+            Console.WriteLine($"\nEl saldo de su cuenta es: {account.Amount}");
+            return;
         }
 
         static void deposit()
         {
             IAccountData accountAccessor = new AccountData();
             IData dataAccessor = new Data();
+            IAccountLogic logic = new AccountLogic(accountAccessor);
 
             int accountNumber;
             string firstName;
             string lastName;
-            decimal amount;
+            decimal depositAmount;
 
             // Ask for the account number 
             Console.WriteLine("Please enter your account number: ");
@@ -399,12 +400,10 @@ namespace ATMProject
 
             // Ask for the amount 
             Console.WriteLine("Please enter the deposit amount: ");
-            amount = decimal.Parse(Console.ReadLine());
+            depositAmount = decimal.Parse(Console.ReadLine());
 
             // Call deposit function
-            IAccountLogic logicAccesssor = new AccountLogic(accountAccessor);
-
-            logicAccesssor.DepositAmount(accountNumber, amount);
+            logic.DepositAmount(accountNumber, depositAmount);
 
             Console.WriteLine("Your transaction was successful!");
             return;
@@ -412,13 +411,53 @@ namespace ATMProject
 
         static void depositar()
         {
-            var amountS = 500.00;
+            IAccountData accountAccessor = new AccountData();
+            IData dataAccessor = new Data();
+            IAccountLogic logic = new AccountLogic(accountAccessor);
 
-            Console.WriteLine("CUANTO LE GUSTARIA DEPOSITAR? ");
-            var depositAmountS = double.Parse(Console.ReadLine());
+            int accountNumber;
+            string firstName;
+            string lastName;
+            decimal depositAmount;
 
-            Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS + depositAmountS);
-            salida();
+            // Ask for the account number 
+            Console.WriteLine("Ingrese su número de cuenta: ");
+            accountNumber = int.Parse(Console.ReadLine());
+
+            Account account = accountAccessor.GetByAccountNumber(accountNumber);
+
+            if (account == null)
+            {
+                Console.WriteLine("Esta cuenta no existe.");
+                return;
+            }
+
+            // Ask for the first name 
+            Console.WriteLine("Por favor, introduzca su nombre de pila: ");
+            firstName = Console.ReadLine();
+
+            // Ask for the last name 
+            Console.WriteLine("Por favor ingrese su apellido: ");
+            lastName = Console.ReadLine();
+
+            // Verify first and last name 
+            User user = dataAccessor.GetByUserName(account.UserName);
+
+            if (firstName != user.FirstName || lastName != user.LastName)
+            {
+                Console.WriteLine("Los nombres no coinciden con el número de cuenta.");
+                return;
+            }
+
+            // Ask for the amount 
+            Console.WriteLine("Ingrese el monto del depósito: ");
+            depositAmount = decimal.Parse(Console.ReadLine());
+
+            // Call deposit function
+            logic.DepositAmount(accountNumber, depositAmount);
+
+            Console.WriteLine("Tu transacción fue exitosa!");
+            return;
         }
 
         static void withdraw()
@@ -508,44 +547,87 @@ namespace ATMProject
 
         static void retirar()
         {
-            var amountS = 500;
+            IAccountData accountAccessor = new AccountData();
+            IAccountLogic logic = new AccountLogic(accountAccessor);
 
-            Console.WriteLine("CUANTO LE GUSTARIA RETIRAR? ");
+            int accountNumber;
+            decimal withdrawAmount;
+            string pin = "";
+
+            // Ask for the account number 
+            Console.WriteLine("Ingrese su número de cuenta: ");
+            accountNumber = int.Parse(Console.ReadLine());
+
+            // Verify the account number 
+            Account account = accountAccessor.GetByAccountNumber(accountNumber);
+            if (account == null)
+            {
+                Console.WriteLine("Esta cuenta no existe.");
+                return;
+            }
+
+            // Ask for the pin
+            while (pin != account.Pin)
+            {
+                Console.WriteLine("Por favor ingrese su pin: ");
+                pin = Console.ReadLine();
+
+                if (pin == account.Pin)
+                {
+                    Console.WriteLine("Usuario autenticado.\n");
+                }
+                else
+                {
+                    Console.WriteLine("Pin incorrecto. Inténtalo de nuevo: ");
+                }
+            }
+
+            // Complete withdraw 
+            Console.WriteLine("¿Cuánto le gustaría retirar?");
             Console.WriteLine("1. $20");
             Console.WriteLine("2. $40");
             Console.WriteLine("3. $60");
             Console.WriteLine("4. $80");
             Console.WriteLine("5. $100");
-            Console.WriteLine("6. VOLVER AL MENU PRINCIPAL");
+            Console.WriteLine("6. Ingrese su monto");
 
-            var withdrawOptionS = int.Parse(Console.ReadLine());
+            int withdrawOption = int.Parse(Console.ReadLine());
 
-            switch (withdrawOptionS)
+            switch (withdrawOption)
             {
                 case 1:
-                    Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 20);
-                    salida();
+                    withdrawAmount = 20;
+                    exit();
                     break;
                 case 2:
-                    Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 40);
-                    salida();
+                    withdrawAmount = 40;
+                    exit();
                     break;
                 case 3:
-                    Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 60);
-                    salida();
+                    withdrawAmount = 60;
+                    exit();
                     break;
                 case 4:
-                    Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 80);
-                    salida();
+                    withdrawAmount = 80;
+                    exit();
                     break;
                 case 5:
-                    Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 100);
-                    salida();
+                    withdrawAmount = 100;
+                    exit();
+                    break;
+                case 6:
+                    Console.WriteLine("Por favor ingrese una cantidad: ");
+                    withdrawAmount = decimal.Parse(Console.ReadLine());
                     break;
                 default:
-                    salida();
-                    break;
+                    Console.WriteLine("Opción inválida!");
+                    return;
             }
+
+            logic.WithdrawAmount(accountNumber, withdrawAmount);
+
+            Console.WriteLine("Tu transacción fue exitosa!");
+            return;
         }
 
         static void exit()
@@ -555,7 +637,7 @@ namespace ATMProject
 
         static void salida()
         {
-            Console.WriteLine("GRACIAS POR USAR EL ADIOS DE CYBERBANK.");
+            Console.WriteLine("Gracias por utilizar CyberBank. Adiós.");
         }
     }
 }
