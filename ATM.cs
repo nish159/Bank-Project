@@ -286,6 +286,7 @@ namespace ATMProject
             Console.WriteLine("3. Retirar");
             Console.WriteLine("------------------------------");
             Console.WriteLine("4. Terminar transacción");
+            Console.WriteLine("------------------------------");
 
             int opciones = int.Parse(Console.ReadLine());
 
