@@ -1,4 +1,4 @@
-﻿using Accounts;
+using Accounts;
 using Number;
 using System;
 using System.Collections.Generic;
@@ -34,14 +34,14 @@ namespace Logic
             Account account = _accountAccessor.GetByAccountNumber(accountNumber);
             if (account == null)
             {
-                Console.WriteLine($"Unable to deposit {amount} from account {accountNumber} - account does not exist");
+                Console.WriteLine($"UNABLE TO DEPOSIT {amount} FROM ACCOUNT {accountNumber} - ACCOUNT DOES NOT EXISTS.");
                 return -1;
             }
 
             // Verify the amount you are depositing 
             if (account.Amount > amount)
             {
-                Console.WriteLine($"You are depositing {amount} to this account {accountNumber}");
+                Console.WriteLine($"YOU ARE DEPOSITING {amount} TO THIS ACCOUNT {accountNumber}.");
                 return -1;
             }
             // Modify the balance of the account
@@ -60,14 +60,14 @@ namespace Logic
             Account account = _accountAccessor.GetByAccountNumber(accountNumber);
             if (account == null)
             {
-                Console.WriteLine($"Unable to withdraw {amount} from account {accountNumber} - account does not exist");
+                Console.WriteLine($"UNABLE TO WITHDRAW {amount} FROM ACCOUNT {accountNumber} - ACCOUNT DOES NOT EXIST.");
                 return -1;
             }
 
             // Verify that we have enough balance on the account
             if (account.Amount < amount)
             {
-                Console.WriteLine($"Unable to withdraw {amount} from account {accountNumber} - not enough balance, account balance {account.Amount}");
+                Console.WriteLine($"UNABLE TO WITHDRAW {amount} FROM ACCOUNT {accountNumber} - NOT ENOUGHT BALANCE, ACCOUNT BALANCE {account.Amount}.");
                 return -1;
             }
 
