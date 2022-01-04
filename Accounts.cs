@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Accounts
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
     using Number;
     using System.IO;
     using System.Linq;
