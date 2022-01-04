@@ -44,6 +44,7 @@ namespace Logic
                 Console.WriteLine($"You are depositing {amount} to this account {accountNumber}.");
                 return -1;
             }
+            
             // Modify the balance of the account
             account.Amount = account.Amount + amount;
 
