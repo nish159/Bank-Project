@@ -45,7 +45,7 @@ namespace Logic
                 return -1;
             }
             // Modify the balance of the account
-            account.Amount -= account.Amount;
+            account.Amount = account.Amount + amount;
 
             // Update the account
             _accountAccessor.UpdateAccount(account);
