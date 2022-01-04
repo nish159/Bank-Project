@@ -13,38 +13,6 @@ namespace ATMProject
     {
         static void Main(string[] args)
         {
-            IData dataAccessor = new Data();
-
-            string userName;
-            string password = "";
-
-            // Ask for the username and verify
-            Console.WriteLine("WELCOME TO CYBERBANK. PLEASE ENTER YOUR USERNAME: ");
-            userName = Console.ReadLine();
-
-            User user = dataAccessor.GetByUserName(userName);
-
-            if (user == null)
-            {
-                Console.WriteLine("THIS USER DOES NOT EXIST IN OUR SYSTEMS.");
-                return;
-            }
-            // Ask for the password and verify
-            while (password != user.Password)
-            {
-                Console.WriteLine("\nPLEASE ENTER YOUR PASSWORD: ");
-                password = Console.ReadLine();
-
-                if (password == user.Password)
-                {
-                    Console.WriteLine("\nUSER AUTHENTICATED.\nWHAT WOULD YOU LIKE TO DO TODAY?");
-                    mainMenu();
-                }
-                else
-                {
-                    Console.WriteLine("\nINCORRECT PASSWORD. PLEASE TRY AGAIN: ");
-                }
-            }
 
             //language();
 
@@ -203,24 +171,63 @@ namespace ATMProject
 
         static void language()
         {
-            Console.WriteLine("SELECT A LANGUAGE:\n1. ENGLISH\n2. SPANISH");
+            IData dataAccessor = new Data();
+
+            string userName;
+            string password = "";
+
+            Console.WriteLine("Select a language:\n1. English\n2. Spanish");
             var languageOption = int.Parse(Console.ReadLine());
 
             if (languageOption == 1)
             {
-                Console.WriteLine("WELCOME TO CYBERBANK\n");
-                pin();
+                // Ask for the username and verify
+                Console.WriteLine("Please enter your username: ");
+                userName = Console.ReadLine();
 
-                Console.WriteLine("WHAT WOULD YOU LIKE TO DO TODAY?");
-                mainMenu();
+                User user = dataAccessor.GetByUserName(userName);
+
+                if (user == null)
+                {
+                    Console.WriteLine("THIS USER DOES NOT EXIST.");
+                    return;
+                }
+                
+                // Ask for the password and verify
+                while (password != user.Password)
+                {
+                    Console.WriteLine("\nPlease enter your password: ");
+                    password = Console.ReadLine();
+
+                    if (password == user.Password)
+                    {
+                        Console.WriteLine("\nUSER AUTHENTICATED.\nWhat would you like to do today?");
+                        mainMenu();
+                    }
+                    else
+                    {
+                        Console.WriteLine("\nINCORRECT PASSWORD. PLEASE TRY AGAIN: ");
+                    }
+                }
             }
             else
             {
-                Console.WriteLine("BIENVENIDO A CYBERBANK\n");
-                pinS();
+                Console.WriteLine("Por favor introduzca su nombre de usuario: ");
+                userName = Console.ReadLine();
 
-                Console.WriteLine("QUE TE GUSTARIA HACER HOY?");
-                mainMenuS();
+                User user = dataAccessor.GetByUserName(userName);
+
+                if (user == null)
+                {
+                    Console.WriteLine("Este usuario no existe.");
+                    return;
+                }
+
+                // Ask for the password and verify
+                while (password != user.Password)
+                {
+                    Console.WriteLine("Por favor introduzca su contraseña ");
+                }
             }
         }
 
@@ -270,13 +277,13 @@ namespace ATMProject
             Console.WriteLine("------------------------------");
             Console.WriteLine("\nMAIN MENU");
             Console.WriteLine("------------------------------");
-            Console.WriteLine("1. CHECK BALANCE");
+            Console.WriteLine("1. Check Balance");
             Console.WriteLine("------------------------------");
-            Console.WriteLine("2. DEPOSIT");
+            Console.WriteLine("2. Deposit");
             Console.WriteLine("------------------------------");
-            Console.WriteLine("3. WITHDRAW");
+            Console.WriteLine("3. Withdraw");
             Console.WriteLine("------------------------------");
-            Console.WriteLine("4. TERMINATE TRANSACTION");
+            Console.WriteLine("4. Terminate Transaction");
             Console.WriteLine("------------------------------");
 
             int options = int.Parse(Console.ReadLine());
@@ -337,7 +344,7 @@ namespace ATMProject
             int accountNumber;
 
             // Ask for the account number 
-            Console.WriteLine("PLEASE ENTER YOUR ACCOUNT NUMBER: ");
+            Console.WriteLine("Please enter your account number: ");
             accountNumber = int.Parse(Console.ReadLine());
 
             // Verify the account number
@@ -349,7 +356,7 @@ namespace ATMProject
                 return;
             }
 
-            Console.WriteLine($"\nYOUR CURRENT BALANCE IS: {account.Amount}");
+            Console.WriteLine($"\nYour current balance is: {account.Amount}");
             return;
         }
 
@@ -388,7 +395,7 @@ namespace ATMProject
             decimal amount;
 
             // Ask for the account number 
-            Console.WriteLine("PLEASE ENTER YOUR ACCOUNT NUMBER: ");
+            Console.WriteLine("Please enter your account number: ");
             accountNumber = int.Parse(Console.ReadLine());
 
             Account account = accountAccessor.GetByAccountNumber(accountNumber);
@@ -400,11 +407,11 @@ namespace ATMProject
             }
 
             // Ask for the first name 
-            Console.WriteLine("PLEASE ENTER YOUR FIRST NAME: ");
+            Console.WriteLine("Please enter your first name: ");
             firstName = Console.ReadLine();
 
             // Ask for the last name 
-            Console.WriteLine("PLEASE ENTER YOUR LAST NAME: ");
+            Console.WriteLine("Please enter your last name: ");
             lastName = Console.ReadLine();
 
             // Verify first and last name 
@@ -412,12 +419,12 @@ namespace ATMProject
 
             if (firstName != user.FirstName || lastName != user.LastName)
             {
-                Console.WriteLine("THE NAMES DO MATCH THE ACCOUNT.");
+                Console.WriteLine("THE NAMES DO MATCH THE ACCOUNT NUMBER.");
                 return;
             }
 
             // Ask for the amount 
-            Console.WriteLine("PLEASE ENTER THE DEPOSIT AMOUNT: ");
+            Console.WriteLine("Please enter the deposit amount: ");
             amount = decimal.Parse(Console.ReadLine());
 
             // Call deposit function
@@ -425,7 +432,7 @@ namespace ATMProject
 
             logicAccesssor.DepositAmount(accountNumber, amount);
 
-            Console.WriteLine("YOUR TRANSACTION WAS SUCCESSFUL!");
+            Console.WriteLine("Your transaction was successful!");
             return;
         }
 
@@ -450,21 +457,21 @@ namespace ATMProject
             string pin = "";
 
             // Ask for the account number 
-            Console.WriteLine("PLEASE ENTER YOUR ACCOUNT NUMBER: ");
+            Console.WriteLine("Please enter your account number: ");
             accountNumber = int.Parse(Console.ReadLine());
 
             // Verify the account number 
             Account account = accountAccessor.GetByAccountNumber(accountNumber);
             if (account == null)
             {
-                Console.WriteLine("THIS ACCOUNT IS NOT IN OUR SYSTEM.");
+                Console.WriteLine("THIS ACCOUNT DOES NOT EXIST.");
                 return;
             }
 
             // Ask for the pin
             while (pin != account.Pin)
             {
-                Console.WriteLine("PLEASE ENTER YOUR PIN: ");
+                Console.WriteLine("Please enter your pin: ");
                 pin = Console.ReadLine();
 
                 if (pin == account.Pin)
@@ -478,13 +485,13 @@ namespace ATMProject
             }
 
             // Complete withdraw 
-            Console.WriteLine("HOW MUCH YOU WOULD LIKE TO WITHDRAW? ");
+            Console.WriteLine("How much would you like to witdraw? ");
             Console.WriteLine("1. $20");
             Console.WriteLine("2. $40");
             Console.WriteLine("3. $60");
             Console.WriteLine("4. $80");
             Console.WriteLine("5. $100");
-            Console.WriteLine("6. ENTER AN AMOUNT");
+            Console.WriteLine("6. Enter your amount");
 
             int withdrawOption = int.Parse(Console.ReadLine());
 
@@ -511,7 +518,7 @@ namespace ATMProject
                     exit();
                     break;
                 case 6:
-                    Console.WriteLine("PLEASE ENTER AN AMOUNT: ");
+                    Console.WriteLine("Please enter an amount: ");
                     withdrawAmount = decimal.Parse(Console.ReadLine());
                     break;
                 default:
@@ -521,7 +528,7 @@ namespace ATMProject
 
             logic.WithdrawAmount(accountNumber, withdrawAmount);
             
-            Console.WriteLine("YOUR TRANSACTION WAS SUCCESSFUL!");
+            Console.WriteLine("Your transaction was successful!");
             return;
         }
 
@@ -569,7 +576,7 @@ namespace ATMProject
 
         static void exit()
         {
-            Console.WriteLine("THANK YOU FOR USING CYBERBANK GOODBYE.");
+            Console.WriteLine("Thank you for using CyberBank. GoodBye.");
         }
 
         static void exitS()
