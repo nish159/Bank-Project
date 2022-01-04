@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DataAccess
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
     using Models;
     using System.IO;
     using System.Linq;
