@@ -13,8 +13,77 @@ namespace ATMProject
     {
         static void Main(string[] args)
         {
+            IData dataAccessor = new Data();
 
-            //language();
+            string userName;
+            string password = "";
+            string nombreUsuario;
+            string contraseña = "";
+
+            Console.WriteLine("Select a language:\n1. English\n2. Spanish");
+            int languageOption = int.Parse(Console.ReadLine());
+
+            if (languageOption == 1)
+            {
+                // Ask for the username and verify
+                Console.WriteLine("Please enter your username: ");
+                userName = Console.ReadLine();
+
+                User user = dataAccessor.GetByUserName(userName);
+
+                if (user == null)
+                {
+                    Console.WriteLine("This user does not exist.");
+                    return;
+                }
+
+                // Ask for the password and verify
+                while (password != user.Password)
+                {
+                    Console.WriteLine("\nPlease enter your password: ");
+                    password = Console.ReadLine();
+
+                    if (password == user.Password)
+                    {
+                        Console.WriteLine("\nUser Authenticated.\nWhat would you like to do today?");
+                        mainMenu();
+                    }
+                    else
+                    {
+                        Console.WriteLine("\nIncorrect Password. Please try again: ");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Por favor introduzca su nombre de usuario: ");
+                nombreUsuario = Console.ReadLine();
+
+                User usuario = dataAccessor.GetByUserName(nombreUsuario);
+
+                if (nombreUsuario == null)
+                {
+                    Console.WriteLine("Este usuario no existe.");
+                    return;
+                }
+
+                // Ask for the password and verify
+                while (contraseña != usuario.Password)
+                {
+                    Console.WriteLine("Por favor introduzca su contraseña ");
+                    contraseña = Console.ReadLine();
+
+                    if (contraseña == usuario.Password)
+                    {
+                        Console.WriteLine("\nUsuario autenticado.\nQué te gustaría hacer hoy?");
+                        menúPrincipal();
+                    }
+                    else
+                    {
+                        Console.WriteLine("\nContraseña incorrecta. Contraseña incorrecta: ");
+                    }
+                }
+            }
 
             /*
             IData dataAccessor = new Data();
@@ -169,113 +238,10 @@ namespace ATMProject
             Console.WriteLine("");
         }
 
-        static void language()
-        {
-            IData dataAccessor = new Data();
-
-            string userName;
-            string password = "";
-
-            Console.WriteLine("Select a language:\n1. English\n2. Spanish");
-            var languageOption = int.Parse(Console.ReadLine());
-
-            if (languageOption == 1)
-            {
-                // Ask for the username and verify
-                Console.WriteLine("Please enter your username: ");
-                userName = Console.ReadLine();
-
-                User user = dataAccessor.GetByUserName(userName);
-
-                if (user == null)
-                {
-                    Console.WriteLine("THIS USER DOES NOT EXIST.");
-                    return;
-                }
-                
-                // Ask for the password and verify
-                while (password != user.Password)
-                {
-                    Console.WriteLine("\nPlease enter your password: ");
-                    password = Console.ReadLine();
-
-                    if (password == user.Password)
-                    {
-                        Console.WriteLine("\nUSER AUTHENTICATED.\nWhat would you like to do today?");
-                        mainMenu();
-                    }
-                    else
-                    {
-                        Console.WriteLine("\nINCORRECT PASSWORD. PLEASE TRY AGAIN: ");
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("Por favor introduzca su nombre de usuario: ");
-                userName = Console.ReadLine();
-
-                User user = dataAccessor.GetByUserName(userName);
-
-                if (user == null)
-                {
-                    Console.WriteLine("Este usuario no existe.");
-                    return;
-                }
-
-                // Ask for the password and verify
-                while (password != user.Password)
-                {
-                    Console.WriteLine("Por favor introduzca su contraseña ");
-                }
-            }
-        }
-
-        static void pin()
-        {
-
-            var pin = "";
-
-            while (pin != "1234")
-            {
-                Console.WriteLine("PLEASE ENTER YOUR PIN: ");
-                pin = Console.ReadLine();
-
-                if (pin == "1234")
-                {
-                    Console.WriteLine("\nAUTHENTICATED\n");
-                }
-                else
-                {
-                    Console.WriteLine("\nNOT AUTHENTICATED\n");
-                }
-            }
-        }
-
-        static void pinS()
-        {
-            var pinS = "";
-
-            while (pinS != "1234")
-            {
-                Console.WriteLine("INTRODUCE TU PIN: ");
-                pinS = Console.ReadLine();
-
-                if (pinS == "1234")
-                {
-                    Console.WriteLine("\nAUTENTICADO\n");
-                }
-                else
-                {
-                    Console.WriteLine("\nSIN AUTENTICADO\n");
-                }
-            }
-        }
-
         static void mainMenu()
         {
             Console.WriteLine("------------------------------");
-            Console.WriteLine("\nMAIN MENU");
+            Console.WriteLine("\nMain Menu");
             Console.WriteLine("------------------------------");
             Console.WriteLine("1. Check Balance");
             Console.WriteLine("------------------------------");
@@ -302,37 +268,44 @@ namespace ATMProject
                 case 4:
                     exit();
                     break;
+                default:
+                    Console.WriteLine("This is not a valid option.");
+                    return;
             }
         }
 
-        static void mainMenuS()
+        static void menúPrincipal()
         {
-            Console.WriteLine("\nMENU PRINCIPAL");
             Console.WriteLine("------------------------------");
-            Console.WriteLine("1. COMPROBAR SALDO");
+            Console.WriteLine("\nMenú principal");
             Console.WriteLine("------------------------------");
-            Console.WriteLine("2. DEPOSITO");
+            Console.WriteLine("1. Consultar saldo");
             Console.WriteLine("------------------------------");
-            Console.WriteLine("3. RETIRAR");
+            Console.WriteLine("2. Depositar");
             Console.WriteLine("------------------------------");
-            Console.WriteLine("4. FINALIZAR TRANSACCION");
+            Console.WriteLine("3. Retirar");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("4. Terminar transacción");
 
-            var optionsS = int.Parse(Console.ReadLine());
+            int opciones = int.Parse(Console.ReadLine());
 
-            switch (optionsS)
+            switch (opciones)
             {
                 case 1:
-                    balanceS();
+                    equilibrio();
                     break;
                 case 2:
-                    depositS();
+                    depositar();
                     break;
                 case 3:
-                    withdrawS();
+                    retirar();
                     break;
                 case 4:
-                    exitS();
+                    salida();
                     break;
+                default:
+                    Console.WriteLine("Esta no es una opción válida.");
+                    return;
 
             }
         }
@@ -352,7 +325,7 @@ namespace ATMProject
 
             if (account == null)
             {
-                Console.WriteLine("THIS ACCOUNT DOES NOT EXIST.");
+                Console.WriteLine("This account does not exist.");
                 return;
             }
 
@@ -360,7 +333,7 @@ namespace ATMProject
             return;
         }
 
-        static void balanceS()
+        static void equilibrio()
         {
             var amountS = 500;
 
@@ -372,15 +345,15 @@ namespace ATMProject
 
             if (answerS == "y")
             {
-                mainMenuS();
+                menúPrincipal();
             }
             else if (answerS == "n")
             {
-                exitS();
+                salida();
             }
             else
             {
-                exitS();
+                salida();
             }
         }
 
@@ -402,7 +375,7 @@ namespace ATMProject
 
             if (account == null)
             {
-                Console.WriteLine("THIS ACCOUNT DOES NOT EXIST.");
+                Console.WriteLine("This account does not exist.");
                 return;
             }
 
@@ -419,7 +392,7 @@ namespace ATMProject
 
             if (firstName != user.FirstName || lastName != user.LastName)
             {
-                Console.WriteLine("THE NAMES DO MATCH THE ACCOUNT NUMBER.");
+                Console.WriteLine("The names do not match the account number.");
                 return;
             }
 
@@ -436,7 +409,7 @@ namespace ATMProject
             return;
         }
 
-        static void depositS()
+        static void depositar()
         {
             var amountS = 500.00;
 
@@ -444,7 +417,7 @@ namespace ATMProject
             var depositAmountS = double.Parse(Console.ReadLine());
 
             Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS + depositAmountS);
-            exitS();
+            salida();
         }
 
         static void withdraw()
@@ -464,7 +437,7 @@ namespace ATMProject
             Account account = accountAccessor.GetByAccountNumber(accountNumber);
             if (account == null)
             {
-                Console.WriteLine("THIS ACCOUNT DOES NOT EXIST.");
+                Console.WriteLine("This account does not exist.");
                 return;
             }
 
@@ -476,16 +449,16 @@ namespace ATMProject
 
                 if (pin == account.Pin)
                 {
-                    Console.WriteLine("USER AUTHENTICATED\n");
+                    Console.WriteLine("User Authenticated.\n");
                 }
                 else
                 {
-                    Console.WriteLine("INCORRECT PIN. PLEASE TRY AGAIN: ");
+                    Console.WriteLine("Incorrect pin. Please try again: ");
                 }
             }
 
             // Complete withdraw 
-            Console.WriteLine("How much would you like to witdraw? ");
+            Console.WriteLine("How much would you like to withdraw? ");
             Console.WriteLine("1. $20");
             Console.WriteLine("2. $40");
             Console.WriteLine("3. $60");
@@ -522,7 +495,7 @@ namespace ATMProject
                     withdrawAmount = decimal.Parse(Console.ReadLine());
                     break;
                 default:
-                    Console.WriteLine("INVALID OPTION!");
+                    Console.WriteLine("Invalid Option!");
                     return;
             }
 
@@ -532,7 +505,7 @@ namespace ATMProject
             return;
         }
 
-        static void withdrawS()
+        static void retirar()
         {
             var amountS = 500;
 
@@ -550,26 +523,26 @@ namespace ATMProject
             {
                 case 1:
                     Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 20);
-                    exitS();
+                    salida();
                     break;
                 case 2:
                     Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 40);
-                    exitS();
+                    salida();
                     break;
                 case 3:
                     Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 60);
-                    exitS();
+                    salida();
                     break;
                 case 4:
                     Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 80);
-                    exitS();
+                    salida();
                     break;
                 case 5:
                     Console.WriteLine("SU SALDO ACTUAL ES: {0}", amountS - 100);
-                    exitS();
+                    salida();
                     break;
                 default:
-                    exitS();
+                    salida();
                     break;
             }
         }
@@ -579,7 +552,7 @@ namespace ATMProject
             Console.WriteLine("Thank you for using CyberBank. GoodBye.");
         }
 
-        static void exitS()
+        static void salida()
         {
             Console.WriteLine("GRACIAS POR USAR EL ADIOS DE CYBERBANK.");
         }
