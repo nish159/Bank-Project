@@ -1,4 +1,4 @@
-﻿namespace ATMProject
+namespace ATMProject
 {
     using System;
     using System.Collections.Generic;
@@ -18,7 +18,7 @@
             string userName;
             string password = "";
 
-            // Ask for the username 
+            // Ask for the username and verify
             Console.WriteLine("WELCOME TO CYBERBANK. PLEASE ENTER YOUR USERNAME: ");
             userName = Console.ReadLine();
 
@@ -29,7 +29,7 @@
                 Console.WriteLine("THIS USER DOES NOT EXIST IN OUR SYSTEMS.");
                 return;
             }
-            // Ask for the password
+            // Ask for the password and verify
             while (password != user.Password)
             {
                 Console.WriteLine("\nPLEASE ENTER YOUR PASSWORD: ");
@@ -408,7 +408,13 @@
             lastName = Console.ReadLine();
 
             // Verify first and last name 
-            List<User> user = dataAccessor.GetFirstLast(firstName, lastName);
+            User user = dataAccessor.GetByUserName(account.UserName);
+
+            if (firstName != user.FirstName || lastName != user.LastName)
+            {
+                Console.WriteLine("THE NAMES DO MATCH THE ACCOUNT.");
+                return;
+            }
 
             // Ask for the amount 
             Console.WriteLine("PLEASE ENTER THE DEPOSIT AMOUNT: ");
