@@ -87,6 +87,7 @@ namespace ATMProject
             }
 
             /*
+            // Log user data into json file
             IData dataAccessor = new Data();
             List<User> users = dataAccessor.GetAllUsers();
             PrintUsers(users);
@@ -143,6 +144,7 @@ namespace ATMProject
 
             Console.WriteLine("done");
 
+            // Log account data into json file 
             IAccountData accountAccessor = new AccountData();
             List<Account> accounts = accountAccessor.GetAllAccounts();
             PrintAccounts(accounts);
