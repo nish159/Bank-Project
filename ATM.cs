@@ -46,7 +46,7 @@ namespace ATMProject
                     if (password == user.Password)
                     {
                         Console.WriteLine("\nUser Authenticated.\nWhat would you like to do today?\n");
-                        mainMenu();
+                        mainMenu(userName);
                     }
                     else
                     {
@@ -77,7 +77,7 @@ namespace ATMProject
                     if (contraseña == usuario.Password)
                     {
                         Console.WriteLine("\nUsuario autenticado.\n¿Qué te gustaría hacer hoy?\n");
-                        menúPrincipal();
+                        menúPrincipal(nombreUsuario);
                     }
                     else
                     {
@@ -87,7 +87,7 @@ namespace ATMProject
             }
 
             /*
-            // Log user data into json file
+            // Log user data into json file 
             IData dataAccessor = new Data();
             List<User> users = dataAccessor.GetAllUsers();
             PrintUsers(users);
@@ -144,7 +144,7 @@ namespace ATMProject
 
             Console.WriteLine("done");
 
-            // Log account data into json file 
+            // Log account data into json file
             IAccountData accountAccessor = new AccountData();
             List<Account> accounts = accountAccessor.GetAllAccounts();
             PrintAccounts(accounts);
@@ -241,43 +241,53 @@ namespace ATMProject
             Console.WriteLine("");
         }
 
-        static void mainMenu()
+        static void mainMenu(string userName)
         {
-            Console.WriteLine("------------------------------");
-            Console.WriteLine("Main Menu");
-            Console.WriteLine("------------------------------");
-            Console.WriteLine("1. Check Balance");
-            Console.WriteLine("------------------------------");
-            Console.WriteLine("2. Deposit");
-            Console.WriteLine("------------------------------");
-            Console.WriteLine("3. Withdraw");
-            Console.WriteLine("------------------------------");
-            Console.WriteLine("4. Terminate Transaction");
-            Console.WriteLine("------------------------------\n");
-
-            int options = int.Parse(Console.ReadLine());
-
-            switch (options)
+            while (true)
             {
-                case 1:
-                    balance();
-                    break;
-                case 2:
-                    deposit();
-                    break;
-                case 3:
-                    withdraw();
-                    break;
-                case 4:
-                    exit();
-                    break;
-                default:
-                    Console.WriteLine("This is not a valid option.");
-                    return;
+
+
+                Console.WriteLine("------------------------------");
+                Console.WriteLine("Main Menu");
+                Console.WriteLine("------------------------------");
+                Console.WriteLine("1. Check Balance");
+                Console.WriteLine("------------------------------");
+                Console.WriteLine("2. Deposit");
+                Console.WriteLine("------------------------------");
+                Console.WriteLine("3. Withdraw");
+                Console.WriteLine("------------------------------");
+                Console.WriteLine("4. View All Accounts");
+                Console.WriteLine("------------------------------");
+                Console.WriteLine("5. Terminate Transaction");
+                Console.WriteLine("------------------------------\n");
+
+                int options = int.Parse(Console.ReadLine());
+
+                switch (options)
+                {
+                    case 1:
+                        balance();
+                        break;
+                    case 2:
+                        deposit();
+                        break;
+                    case 3:
+                        withdraw();
+                        break;
+                    case 4:
+                        viewAccounts(userName);
+                        break;
+                    case 5:
+                        exit();
+                        return;
+                    default:
+                        Console.WriteLine("This is not a valid option.");
+                        return;
+                }
             }
         }
 
-        static void menúPrincipal()
+        static void menúPrincipal(string nombreUsario)
         {
             Console.WriteLine("------------------------------");
             Console.WriteLine("Menú principal");
@@ -288,7 +298,9 @@ namespace ATMProject
             Console.WriteLine("------------------------------");
             Console.WriteLine("3. Retirar");
             Console.WriteLine("------------------------------");
-            Console.WriteLine("4. Terminar transacción");
+            Console.WriteLine("4. Ver todas las cuentas");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("5. Terminar transacción");
             Console.WriteLine("------------------------------\n");
 
             int opciones = int.Parse(Console.ReadLine());
@@ -305,8 +317,11 @@ namespace ATMProject
                     retirar();
                     break;
                 case 4:
-                    salida();
+                    verCuentas(nombreUsario);
                     break;
+                case 5:
+                    salida();
+                    return;
                 default:
                     Console.WriteLine("Esta no es una opción válida.");
                     return;
@@ -630,6 +645,24 @@ namespace ATMProject
 
             Console.WriteLine("Tu transacción fue exitosa!");
             return;
+        }
+
+        static void viewAccounts(string userName)
+        {
+            IAccountData accountAccessor = new AccountData();
+
+            List<Account> accounts = accountAccessor.GetAllUserAccounts(userName);
+
+            PrintAccounts(accounts);   
+        }
+
+        static void verCuentas(string nombreUsario)
+        {
+            IAccountData accountAccessor = new AccountData();
+
+            List<Account> accounts = accountAccessor.GetAllUserAccounts(nombreUsario);
+
+            PrintAccounts(accounts);
         }
 
         static void exit()
