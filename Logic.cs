@@ -18,6 +18,8 @@ namespace Logic
 
         decimal DepositAmount(int accountNumber, decimal amount);
 
+        decimal TransferAmount(int accountNumber, decimal amount);
+
     }
 
     public class AccountLogic : IAccountLogic
@@ -47,6 +49,33 @@ namespace Logic
             
             // Modify the balance of the account
             account.Amount = account.Amount + amount;
+
+            // Update the account
+            _accountAccessor.UpdateAccount(account);
+
+            // Return the updated balance of the account
+            return account.Amount;
+        }
+
+        public decimal TransferAmount(int accountNumber, decimal amount)
+        {
+            // Get the account 
+            Account account = _accountAccessor.GetByAccountNumber(accountNumber);
+            if (account == null)
+            {
+                Console.WriteLine($"Unable to transfer {amount} from account {accountNumber} - Account does not exist.");
+                return -1;
+            }
+
+            // Verify that we have enough balance on the account
+            if (account.Amount < amount)
+            {
+                Console.WriteLine($"Unable to transfer {amount} from account {accountNumber} - not enough balance, account balance {account.Amount}.");
+                return -1;
+            }
+
+            // Modify the balance of the acocunt
+            
 
             // Update the account
             _accountAccessor.UpdateAccount(account);
