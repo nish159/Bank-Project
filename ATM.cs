@@ -8,6 +8,8 @@ namespace ATMProject
     using Accounts;
     using Number;
     using Logic;
+    using System.Security.Cryptography;
+    using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
     class ATM
     {
@@ -42,6 +44,23 @@ namespace ATMProject
                 {
                     Console.WriteLine("\nPlease enter your password: ");
                     password = Console.ReadLine();
+
+                    // generate a 128-bit salt using a cryptographically strong random sequence of nonzero values
+                    byte[] salt = new byte[128 / 8];
+                    using (var rngCsp = new RNGCryptoServiceProvider())
+                    {
+                        rngCsp.GetNonZeroBytes(salt);
+                    }
+                    Console.WriteLine($"Salt: {Convert.ToBase64String(salt)}");
+
+                    // derive a 256-bit subkey (use HMACSHA256 with 100,000 iterations)
+                    string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                        password: password,
+                        salt: salt,
+                        prf: KeyDerivationPrf.HMACSHA256,
+                        iterationCount: 100000,
+                        numBytesRequested: 256 / 8));
+                    Console.WriteLine($"Hashed: {hashed}");
 
                     if (password == user.Password)
                     {
@@ -256,9 +275,11 @@ namespace ATMProject
                 Console.WriteLine("------------------------------");
                 Console.WriteLine("3. Withdraw");
                 Console.WriteLine("------------------------------");
-                Console.WriteLine("4. View All Accounts");
+                Console.WriteLine("4. Transfer");
                 Console.WriteLine("------------------------------");
-                Console.WriteLine("5. Terminate Transaction");
+                Console.WriteLine("5. View All Accounts");
+                Console.WriteLine("------------------------------");
+                Console.WriteLine("6. Terminate Transaction");
                 Console.WriteLine("------------------------------\n");
 
                 int options = int.Parse(Console.ReadLine());
@@ -275,9 +296,12 @@ namespace ATMProject
                         withdraw();
                         break;
                     case 4:
-                        viewAccounts(userName);
+                        transfer();
                         break;
                     case 5:
+                        viewAccounts(userName);
+                        break;
+                    case 6:
                         exit();
                         return;
                     default:
@@ -644,6 +668,79 @@ namespace ATMProject
             logic.WithdrawAmount(accountNumber, withdrawAmount);
 
             Console.WriteLine("Tu transacción fue exitosa!");
+            return;
+        }
+
+        static void transfer()
+        {
+            IAccountData accountAccessor = new AccountData();
+            IData dataAccessor = new Data();
+            IAccountLogic logic = new AccountLogic(accountAccessor);
+
+            int sourceAccount;
+            int destinationAccount;
+            decimal transferAmount;
+            string pin = "";
+            string firstName;
+            string lastName;
+
+            Console.WriteLine("Enter the account number you want to transfer from: ");
+            sourceAccount = int.Parse(Console.ReadLine());
+
+            Account account1 = accountAccessor.GetByAccountNumber(sourceAccount);
+
+            if (account1 == null)
+            {
+                Console.WriteLine("This account does not exist!");
+                return;
+            }
+
+            while (pin != account1.Pin)
+            {
+                Console.WriteLine("\nPlease enter your pin: ");
+                pin = Console.ReadLine();
+
+                if (pin == account1.Pin)
+                {
+                    Console.WriteLine("\nUser Authenticated.");
+                }
+                else
+                {
+                    Console.WriteLine("\nIncorrect pin. Please try again: ");
+                }
+            }
+
+            Console.WriteLine("\nPlease enter the amount you are transferring: ");
+            transferAmount = decimal.Parse(Console.ReadLine());
+
+            Console.WriteLine("\nPlease enter the account you want to transfer to: ");
+            destinationAccount = int.Parse(Console.ReadLine());
+
+            Account account2 = accountAccessor.GetByAccountNumber(destinationAccount);
+            
+            if (account2 == null)
+            {
+                Console.WriteLine("This account does not exist!");
+                return;
+            }
+
+            Console.WriteLine("\nPlease enter the first name of the account holder: ");
+            firstName = Console.ReadLine();
+
+            Console.WriteLine("\nPlease enter the last name of the account holder: ");
+            lastName = Console.ReadLine();
+
+            User user = dataAccessor.GetByUserName(account2.UserName);
+
+            if (firstName != user.FirstName || lastName != user.LastName)
+            {
+                Console.WriteLine("The names do not match the account number.");
+                return;
+            }
+            
+            transferAmount = logic.WithdrawAmount(sourceAccount, transferAmount) + logic.DepositAmount(destinationAccount, transferAmount);
+
+            Console.WriteLine("Your transfer was successful!");
             return;
         }
 
