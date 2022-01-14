@@ -67,6 +67,7 @@ namespace Logic
             {
                 Console.WriteLine($"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}");
                 
+                // Function will return the amount if unable to transfer
                 DepositAmount(sourceAccountNumber, amount);
                 return -1;
             }
@@ -77,7 +78,8 @@ namespace Logic
                 Console.WriteLine($"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}");
                 return -1;
             }
-
+            
+            Console.WriteLine("Your transfer was successful!");
             return withdrawResult;
         }
 
