@@ -8,7 +8,7 @@ namespace DataAccess
     using System.Linq;
     using System.Text.Json;
 
-    public interface IData
+    public interface IUserRepository
     {
         // function to get a list of users
         List<User> GetAllUsers();
@@ -43,7 +43,7 @@ namespace DataAccess
         User GetById(string ID);
     }
 
-    public class Data : IData
+    public class UserFileSystemRepository : IUserRepository
     {
         // you need to set the parameteres for  creating the user
         public void CreatAUser(User user)
@@ -196,28 +196,6 @@ namespace DataAccess
                 writer.Write(usersJson);
 
             }
-        }
-    }
-}
-
-namespace Models
-{
-    using System;
-    
-    public class User
-    {
-        public string Id { get; set; }
-        public string UserName { get; set; }
-
-        public string FirstName { get; set; }
-
-        public string LastName { get; set; }
-
-        public string Password { get; set; }
-
-        public User()
-        {
-            Id = Guid.NewGuid().ToString();
         }
     }
 }
