@@ -496,8 +496,6 @@ namespace ATMProject
             lastName = Console.ReadLine();
 
             logic.TransferAmount(sourceAccount, pin, destinationAccount, firstName, lastName, transferAmount);
-
-            Console.WriteLine("Your transfer was successful!");
             return;
         }
 
