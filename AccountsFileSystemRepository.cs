@@ -1,44 +1,14 @@
-namespace Accounts
+namespace DataAccess
 {
     using System;
     using System.Collections.Generic;
     using System.Text;
-    using Number;
+    using Models;
     using System.IO;
     using System.Linq;
     using System.Text.Json;
-    public interface IAccountData
-    {
-        // function to get a list of all accounts in the system
-        List<Account> GetAllAccounts();
 
-        // function to get a list of all user accounts in the system
-        List<Account> GetAllUserAccounts(string userName);
-
-        // function to get a single account
-        /// <summary>
-        /// Gets an account with the given account number
-        /// </summary>
-        /// <param name="accountNumber">Unique account identifier</param>
-        /// <returns>The <see cref="Account"/> with the given account number, or null if no account exists with that number</returns>
-
-        // function to get a single account
-        Account GetByAccountNumber(int accountNumber);
-
-        // function to get by guid
-        Account GetById(string userName);
-
-        // function to create an account 
-        void CreateAccount(Account account);
-
-        // function to update the account information 
-        void UpdateAccount(Account updatedAccount);
-
-        // function to delete an account 
-        void DeleteAccount(Account deletedAccount);
-    }
-
-    public class AccountData : IAccountData
+    public class AccountFileSystemRepository : IAccountRepository
     {
 
         public void CreateAccount(Account account)
@@ -142,25 +112,6 @@ namespace Accounts
                 string accountsJson = JsonSerializer.Serialize(accounts);
                 writer.Write(accountsJson);
             }
-        }
-    }
-}
-
-namespace Number
-{
-    using System;
-    
-    public class Account
-    {
-        // each one should be unique
-        public string Id { get; set; }
-        public string UserName { get; set; }
-        public int Number { get; set; }
-        public decimal Amount { get; set; }
-        public string Pin { get; set; }
-        public Account()
-        {
-            Id = Guid.NewGuid().ToString();
         }
     }
 }
