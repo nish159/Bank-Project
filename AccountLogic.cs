@@ -66,6 +66,8 @@ namespace Logic
             if (withdrawResult == -1)
             {
                 Console.WriteLine($"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}");
+                
+                DepositAmount(sourceAccountNumber, amount);
                 return -1;
             }
 
