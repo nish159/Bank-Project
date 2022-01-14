@@ -5,8 +5,6 @@ namespace ATMProject
     using System.Text.Json;
     using DataAccess;
     using Models;
-    using Accounts;
-    using Number;
     using Logic;
     using System.Security.Cryptography;
     using Microsoft.AspNetCore.Cryptography.KeyDerivation;
@@ -15,7 +13,7 @@ namespace ATMProject
     {
         static void Main(string[] args)
         {
-            IData dataAccessor = new Data();
+            IUserRepository dataAccessor = new UserFileSystemRepository();
 
             string userName;
             string password = "";
@@ -104,140 +102,7 @@ namespace ATMProject
                     }
                 }
             }
-
-            /*
-            // Log user data into json file 
-            IData dataAccessor = new Data();
-            List<User> users = dataAccessor.GetAllUsers();
-            PrintUsers(users);
-
-            User user = new User();
-            user.UserName = "venom";
-            user.FirstName = "Eddie";
-            user.LastName = "Brock";
-            user.Password = "password";
-
-            dataAccessor.CreatAUser(user);
-            users = dataAccessor.GetAllUsers();
-            PrintUsers(users);
-
-            User user2 = new User();
-            user2.UserName = "deadpool";
-            user2.FirstName = "Wade";
-            user2.LastName = "Wilson";
-            user2.Password = "password";
-            
-            dataAccessor.CreatAUser(user2);
-            users = dataAccessor.GetAllUsers();
-            PrintUsers(users);
-
-            User user3 = new User();
-            user3.UserName = "elektra";
-            user3.FirstName = "Elektra";
-            user3.LastName = "Natchios";
-            user3.Password = "password";
-
-            dataAccessor.CreatAUser(user3);
-            users = dataAccessor.GetAllUsers();
-            PrintUsers(users);
-
-            User user4 = new User();
-            user4.UserName = "blackwidow";
-            user4.FirstName = "Natasha";
-            user4.LastName = "Romanoff";
-            user4.Password = "password";
-
-            dataAccessor.CreatAUser(user4);
-            users = dataAccessor.GetAllUsers();
-            PrintUsers(users);
-
-            User user5 = new User();
-            user5.UserName = "weaponx";
-            user5.FirstName = "Logan";
-            user5.LastName = "X";
-            user5.Password = "password";
-
-            dataAccessor.CreatAUser(user5);
-            users = dataAccessor.GetAllUsers();
-            PrintUsers(users);
-
             Console.WriteLine("done");
-
-            // Log account data into json file
-            IAccountData accountAccessor = new AccountData();
-            List<Account> accounts = accountAccessor.GetAllAccounts();
-            PrintAccounts(accounts);
-
-            Account account = new Account();
-            account.UserName = "venom";
-            account.Number = 12345;
-            account.Amount = 4025;
-            account.Pin = "1234";
-            
-            accountAccessor.CreateAccount(account);
-            accounts = accountAccessor.GetAllAccounts();
-            PrintAccounts(accounts);
-
-            Account account2 = new Account();
-            account2.UserName = "deadpool";
-            account2.Number = 67890;
-            account2.Amount = 535791;
-            account2.Pin = "1234";
-
-            accountAccessor.CreateAccount(account2);
-            accounts = accountAccessor.GetAllAccounts();
-            PrintAccounts(accounts);
-
-            Account account3 = new Account();
-            account3.UserName = "elektra";
-            account3.Number = 09876;
-            account3.Amount = 50456;
-            account3.Pin = "1234";
-
-            accountAccessor.CreateAccount(account3);
-            accounts = accountAccessor.GetAllAccounts();
-            PrintAccounts(accounts);
-
-            Account account4 = new Account();
-            account4.UserName = "blackwidow";
-            account4.Number = 54321;
-            account4.Amount = 623450;
-            account4.Pin = "1234";
-
-            accountAccessor.CreateAccount(account4);
-            accounts = accountAccessor.GetAllAccounts();
-            PrintAccounts(accounts);
-
-            Account account5 = new Account();
-            account5.UserName = "weaponX";
-            account5.Number = 13579;
-            account5.Amount = 62468;
-            account5.Pin = "1234";
-
-            accountAccessor.CreateAccount(account5);
-            accounts = accountAccessor.GetAllAccounts();
-            PrintAccounts(accounts);
-
-            //account4.Amount = 20000;
-            //accountAccessor.UpdateAccount(account4);
-
-            //user4.UserName = "bwidow";
-            //dataAccessor.UpdateUser(user4);
-
-            //user5.UserName = user4.UserName;
-            //dataAccessor.UpdateUser(user5);
-
-            //accountAccessor.DeleteAccount(account4);
-
-            List<Account> userAccounts = accountAccessor.GetAllUserAccounts("blackwidow");
-            List<User> allUsers = dataAccessor.GetAllUserNames("deadpool");
-            List<User> allFirst = dataAccessor.GetAllFirstNames("Logan");
-            List<User> allLast = dataAccessor.GetAllLastNames("X");
-            */
-
-            Console.WriteLine("done");
-
-            //Console.ReadKey();
         }
 
         static private void PrintUsers(List<User> users)
@@ -355,7 +220,7 @@ namespace ATMProject
 
         static void balance()
         {
-            IAccountData accountAccessor = new AccountData();
+            IAccountRepository accountRepository = new AccountFileSystemRepository();
 
             int accountNumber;
 
@@ -364,7 +229,7 @@ namespace ATMProject
             accountNumber = int.Parse(Console.ReadLine());
 
             // Verify the account number
-            Account account = accountAccessor.GetByAccountNumber(accountNumber);
+            Account account = accountRepository.GetByAccountNumber(accountNumber);
 
             if (account == null)
             {
@@ -378,7 +243,7 @@ namespace ATMProject
 
         static void equilibrio()
         {
-            IAccountData accountAccessor = new AccountData();
+            IAccountRepository accountRepository = new AccountFileSystemRepository();
 
             int accountNumber;
 
@@ -387,7 +252,7 @@ namespace ATMProject
             accountNumber = int.Parse(Console.ReadLine());
 
             // Verify the account number
-            Account account = accountAccessor.GetByAccountNumber(accountNumber);
+            Account account = accountRepository.GetByAccountNumber(accountNumber);
 
             if (account == null)
             {
@@ -401,9 +266,9 @@ namespace ATMProject
 
         static void deposit()
         {
-            IAccountData accountAccessor = new AccountData();
-            IData dataAccessor = new Data();
-            IAccountLogic logic = new AccountLogic(accountAccessor);
+            IAccountRepository accountRepository = new AccountFileSystemRepository();
+            IUserRepository userRepository = new UserFileSystemRepository();
+            IAccountLogic logic = new AccountLogic(accountRepository, userRepository);
 
             int accountNumber;
             string firstName;
@@ -414,14 +279,6 @@ namespace ATMProject
             Console.WriteLine("Please enter your account number: ");
             accountNumber = int.Parse(Console.ReadLine());
 
-            Account account = accountAccessor.GetByAccountNumber(accountNumber);
-
-            if (account == null)
-            {
-                Console.WriteLine("This account does not exist.");
-                return;
-            }
-
             // Ask for the first name 
             Console.WriteLine("Please enter your first name: ");
             firstName = Console.ReadLine();
@@ -430,21 +287,12 @@ namespace ATMProject
             Console.WriteLine("Please enter your last name: ");
             lastName = Console.ReadLine();
 
-            // Verify first and last name 
-            User user = dataAccessor.GetByUserName(account.UserName);
-
-            if (firstName != user.FirstName || lastName != user.LastName)
-            {
-                Console.WriteLine("The names do not match the account number.");
-                return;
-            }
-
             // Ask for the amount 
             Console.WriteLine("Please enter the deposit amount: ");
             depositAmount = decimal.Parse(Console.ReadLine());
 
             // Call deposit function
-            logic.DepositAmount(accountNumber, depositAmount);
+            logic.DepositAmount(firstName, lastName, accountNumber, depositAmount);
 
             Console.WriteLine("Your transaction was successful!");
             return;
@@ -452,9 +300,9 @@ namespace ATMProject
 
         static void depositar()
         {
-            IAccountData accountAccessor = new AccountData();
-            IData dataAccessor = new Data();
-            IAccountLogic logic = new AccountLogic(accountAccessor);
+            IAccountRepository accountRepository = new AccountFileSystemRepository();
+            IUserRepository userRepository = new UserFileSystemRepository();
+            IAccountLogic logic = new AccountLogic(accountRepository, userRepository);
 
             int accountNumber;
             string firstName;
@@ -465,14 +313,6 @@ namespace ATMProject
             Console.WriteLine("Ingrese su número de cuenta: ");
             accountNumber = int.Parse(Console.ReadLine());
 
-            Account account = accountAccessor.GetByAccountNumber(accountNumber);
-
-            if (account == null)
-            {
-                Console.WriteLine("Esta cuenta no existe.");
-                return;
-            }
-
             // Ask for the first name 
             Console.WriteLine("Por favor, introduzca su nombre de pila: ");
             firstName = Console.ReadLine();
@@ -481,21 +321,12 @@ namespace ATMProject
             Console.WriteLine("Por favor ingrese su apellido: ");
             lastName = Console.ReadLine();
 
-            // Verify first and last name 
-            User user = dataAccessor.GetByUserName(account.UserName);
-
-            if (firstName != user.FirstName || lastName != user.LastName)
-            {
-                Console.WriteLine("Los nombres no coinciden con el número de cuenta.");
-                return;
-            }
-
             // Ask for the amount 
             Console.WriteLine("Ingrese el monto del depósito: ");
             depositAmount = decimal.Parse(Console.ReadLine());
 
             // Call deposit function
-            logic.DepositAmount(accountNumber, depositAmount);
+            logic.DepositAmount(firstName, lastName, accountNumber, depositAmount);
 
             Console.WriteLine("Tu transacción fue exitosa!");
             return;
@@ -503,8 +334,9 @@ namespace ATMProject
 
         static void withdraw()
         {
-            IAccountData accountAccessor = new AccountData();
-            IAccountLogic logic = new AccountLogic(accountAccessor);
+            IAccountRepository accountRepository = new AccountFileSystemRepository();
+            IUserRepository userRepository = new UserFileSystemRepository();
+            IAccountLogic logic = new AccountLogic(accountRepository, userRepository);
 
             int accountNumber;
             decimal withdrawAmount;
@@ -514,31 +346,11 @@ namespace ATMProject
             Console.WriteLine("Please enter your account number: ");
             accountNumber = int.Parse(Console.ReadLine());
 
-            // Verify the account number 
-            Account account = accountAccessor.GetByAccountNumber(accountNumber);
-            if (account == null)
-            {
-                Console.WriteLine("This account does not exist.");
-                return;
-            }
+            // Ask for pin
+            Console.WriteLine("Please enter your pin: ");
+            pin = Console.ReadLine();
 
-            // Ask for the pin
-            while (pin != account.Pin)
-            {
-                Console.WriteLine("Please enter your pin: ");
-                pin = Console.ReadLine();
-
-                if (pin == account.Pin)
-                {
-                    Console.WriteLine("User Authenticated.\n");
-                }
-                else
-                {
-                    Console.WriteLine("Incorrect pin. Please try again: ");
-                }
-            }
-
-            // Complete withdraw 
+            // Ask for withdraw amount
             Console.WriteLine("How much would you like to withdraw? ");
             Console.WriteLine("1. $20");
             Console.WriteLine("2. $40");
@@ -580,7 +392,7 @@ namespace ATMProject
                     return;
             }
 
-            logic.WithdrawAmount(accountNumber, withdrawAmount);
+            logic.WithdrawAmount(accountNumber, pin, withdrawAmount);
             
             Console.WriteLine("Your transaction was successful!");
             return;
@@ -588,8 +400,9 @@ namespace ATMProject
 
         static void retirar()
         {
-            IAccountData accountAccessor = new AccountData();
-            IAccountLogic logic = new AccountLogic(accountAccessor);
+            IAccountRepository accountRepository = new AccountFileSystemRepository();
+            IUserRepository userRepository = new UserFileSystemRepository();
+            IAccountLogic logic = new AccountLogic(accountRepository, userRepository);
 
             int accountNumber;
             decimal withdrawAmount;
@@ -599,31 +412,11 @@ namespace ATMProject
             Console.WriteLine("Ingrese su número de cuenta: ");
             accountNumber = int.Parse(Console.ReadLine());
 
-            // Verify the account number 
-            Account account = accountAccessor.GetByAccountNumber(accountNumber);
-            if (account == null)
-            {
-                Console.WriteLine("Esta cuenta no existe.");
-                return;
-            }
-
             // Ask for the pin
-            while (pin != account.Pin)
-            {
-                Console.WriteLine("Por favor ingrese su pin: ");
-                pin = Console.ReadLine();
+            Console.WriteLine("Por favor ingrese su pin: ");
+            pin = Console.ReadLine();
 
-                if (pin == account.Pin)
-                {
-                    Console.WriteLine("Usuario autenticado.\n");
-                }
-                else
-                {
-                    Console.WriteLine("Pin incorrecto. Inténtalo de nuevo: ");
-                }
-            }
-
-            // Complete withdraw 
+            // Ask for withdraw amount
             Console.WriteLine("¿Cuánto le gustaría retirar?");
             Console.WriteLine("1. $20");
             Console.WriteLine("2. $40");
@@ -665,7 +458,7 @@ namespace ATMProject
                     return;
             }
 
-            logic.WithdrawAmount(accountNumber, withdrawAmount);
+            logic.WithdrawAmount(accountNumber, pin, withdrawAmount);
 
             Console.WriteLine("Tu transacción fue exitosa!");
             return;
@@ -673,9 +466,9 @@ namespace ATMProject
 
         static void transfer()
         {
-            IAccountData accountAccessor = new AccountData();
-            IData dataAccessor = new Data();
-            IAccountLogic logic = new AccountLogic(accountAccessor);
+            IAccountRepository accountRepository = new AccountFileSystemRepository();
+            IUserRepository userRepository = new UserFileSystemRepository();
+            IAccountLogic logic = new AccountLogic(accountRepository, userRepository);
 
             int sourceAccount;
             int destinationAccount;
@@ -687,28 +480,8 @@ namespace ATMProject
             Console.WriteLine("Enter the account number you want to transfer from: ");
             sourceAccount = int.Parse(Console.ReadLine());
 
-            Account account1 = accountAccessor.GetByAccountNumber(sourceAccount);
-
-            if (account1 == null)
-            {
-                Console.WriteLine("This account does not exist!");
-                return;
-            }
-
-            while (pin != account1.Pin)
-            {
-                Console.WriteLine("\nPlease enter your pin: ");
-                pin = Console.ReadLine();
-
-                if (pin == account1.Pin)
-                {
-                    Console.WriteLine("\nUser Authenticated.");
-                }
-                else
-                {
-                    Console.WriteLine("\nIncorrect pin. Please try again: ");
-                }
-            }
+            Console.WriteLine("\nPlease enter your pin: ");
+            pin = Console.ReadLine();
 
             Console.WriteLine("\nPlease enter the amount you are transferring: ");
             transferAmount = decimal.Parse(Console.ReadLine());
@@ -716,29 +489,13 @@ namespace ATMProject
             Console.WriteLine("\nPlease enter the account you want to transfer to: ");
             destinationAccount = int.Parse(Console.ReadLine());
 
-            Account account2 = accountAccessor.GetByAccountNumber(destinationAccount);
-            
-            if (account2 == null)
-            {
-                Console.WriteLine("This account does not exist!");
-                return;
-            }
-
             Console.WriteLine("\nPlease enter the first name of the account holder: ");
             firstName = Console.ReadLine();
 
             Console.WriteLine("\nPlease enter the last name of the account holder: ");
             lastName = Console.ReadLine();
 
-            User user = dataAccessor.GetByUserName(account2.UserName);
-
-            if (firstName != user.FirstName || lastName != user.LastName)
-            {
-                Console.WriteLine("The names do not match the account number.");
-                return;
-            }
-            
-            transferAmount = logic.WithdrawAmount(sourceAccount, transferAmount) + logic.DepositAmount(destinationAccount, transferAmount);
+            logic.TransferAmount(sourceAccount, pin, destinationAccount, firstName, lastName, transferAmount);
 
             Console.WriteLine("Your transfer was successful!");
             return;
@@ -746,7 +503,7 @@ namespace ATMProject
 
         static void viewAccounts(string userName)
         {
-            IAccountData accountAccessor = new AccountData();
+            IAccountRepository accountAccessor = new AccountFileSystemRepository();
 
             List<Account> accounts = accountAccessor.GetAllUserAccounts(userName);
 
@@ -755,7 +512,7 @@ namespace ATMProject
 
         static void verCuentas(string nombreUsario)
         {
-            IAccountData accountAccessor = new AccountData();
+            IAccountRepository accountAccessor = new AccountFileSystemRepository();
 
             List<Account> accounts = accountAccessor.GetAllUserAccounts(nombreUsario);
 
