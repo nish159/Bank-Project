@@ -102,7 +102,6 @@ namespace ATMProject
                     }
                 }
             }
-            Console.WriteLine("done");
         }
 
         static private void PrintUsers(List<User> users)
@@ -187,9 +186,11 @@ namespace ATMProject
             Console.WriteLine("------------------------------");
             Console.WriteLine("3. Retirar");
             Console.WriteLine("------------------------------");
-            Console.WriteLine("4. Ver todas las cuentas");
+            Console.WriteLine("4. Transferir");
             Console.WriteLine("------------------------------");
-            Console.WriteLine("5. Terminar transacción");
+            Console.WriteLine("5. Ver todas las cuentas");
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("6. Terminar transacción");
             Console.WriteLine("------------------------------\n");
 
             int opciones = int.Parse(Console.ReadLine());
@@ -206,9 +207,12 @@ namespace ATMProject
                     retirar();
                     break;
                 case 4:
-                    verCuentas(nombreUsario);
+                    transferir();
                     break;
                 case 5:
+                    verCuentas(nombreUsario);
+                    break;
+                case 6:
                     salida();
                     return;
                 default:
@@ -293,8 +297,6 @@ namespace ATMProject
 
             // Call deposit function
             logic.DepositAmount(firstName, lastName, accountNumber, depositAmount);
-
-            Console.WriteLine("Your transaction was successful!");
             return;
         }
 
@@ -327,8 +329,6 @@ namespace ATMProject
 
             // Call deposit function
             logic.DepositAmount(firstName, lastName, accountNumber, depositAmount);
-
-            Console.WriteLine("Tu transacción fue exitosa!");
             return;
         }
 
@@ -393,8 +393,6 @@ namespace ATMProject
             }
 
             logic.WithdrawAmount(accountNumber, pin, withdrawAmount);
-            
-            Console.WriteLine("Your transaction was successful!");
             return;
         }
 
@@ -459,8 +457,6 @@ namespace ATMProject
             }
 
             logic.WithdrawAmount(accountNumber, pin, withdrawAmount);
-
-            Console.WriteLine("Tu transacción fue exitosa!");
             return;
         }
 
@@ -499,20 +495,55 @@ namespace ATMProject
             return;
         }
 
+        static void transferir()
+        {
+            IAccountRepository accountRepository = new AccountFileSystemRepository();
+            IUserRepository userRepository = new UserFileSystemRepository();
+            IAccountLogic logic = new AccountLogic(accountRepository, userRepository);
+
+            int sourceAccount;
+            int destinationAccount;
+            decimal transferAmount;
+            string pin = "";
+            string firstName;
+            string lastName;
+
+            Console.WriteLine("Ingrese el número de cuenta desde el que desea transferir: ");
+            sourceAccount = int.Parse(Console.ReadLine());
+
+            Console.WriteLine("\nPor favor ingrese su pin: ");
+            pin = Console.ReadLine();
+
+            Console.WriteLine("\nPlease enter the amount you are transferring: ");
+            transferAmount = decimal.Parse(Console.ReadLine());
+
+            Console.WriteLine("\nPor favor ingrese la cantidad que está transfiriendo: ");
+            destinationAccount = int.Parse(Console.ReadLine());
+
+            Console.WriteLine("\nPor favor ingrese el nombre del titular de la cuenta: ");
+            firstName = Console.ReadLine();
+
+            Console.WriteLine("\nPor favor ingrese el apellido del titular de la cuenta: ");
+            lastName = Console.ReadLine();
+
+            logic.TransferAmount(sourceAccount, pin, destinationAccount, firstName, lastName, transferAmount);
+            return;
+        }
+
         static void viewAccounts(string userName)
         {
-            IAccountRepository accountAccessor = new AccountFileSystemRepository();
+            IAccountRepository accountRepository = new AccountFileSystemRepository();
 
-            List<Account> accounts = accountAccessor.GetAllUserAccounts(userName);
+            List<Account> accounts = accountRepository.GetAllUserAccounts(userName);
 
             PrintAccounts(accounts);   
         }
 
         static void verCuentas(string nombreUsario)
         {
-            IAccountRepository accountAccessor = new AccountFileSystemRepository();
+            IAccountRepository accountRepository = new AccountFileSystemRepository();
 
-            List<Account> accounts = accountAccessor.GetAllUserAccounts(nombreUsario);
+            List<Account> accounts = accountRepository.GetAllUserAccounts(nombreUsario);
 
             PrintAccounts(accounts);
         }
@@ -520,11 +551,13 @@ namespace ATMProject
         static void exit()
         {
             Console.WriteLine("Thank you for using CyberBank. GoodBye.");
+            return;
         }
 
         static void salida()
         {
             Console.WriteLine("Gracias por utilizar CyberBank. Adiós.");
+            return;
         }
     }
 }
