@@ -1,11 +1,10 @@
-using DataAccess;
-using Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Logic
 {
+    using DataAccess;
+    using Models;
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
 
     public class AccountLogic : IAccountLogic
     {
@@ -49,6 +48,7 @@ namespace Logic
             Validate(firstName, lastName, accountNumber);
 
             // Call deposit function
+            Console.WriteLine("Your transaction was successful!");
             return DepositAmount(accountNumber, amount);
         }
 
@@ -78,7 +78,7 @@ namespace Logic
                 Console.WriteLine($"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}");
                 return -1;
             }
-            
+
             Console.WriteLine("Your transfer was successful!");
             return withdrawResult;
         }
@@ -125,6 +125,8 @@ namespace Logic
                 Console.WriteLine("Incorrect pin.");
                 return -1;
             }
+
+            Console.WriteLine("Your transaction was successful!");
             return WithdrawAmount(accountNumber, amount);
         }
 
