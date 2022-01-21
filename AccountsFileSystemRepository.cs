@@ -6,19 +6,33 @@ namespace DataAccess
     using System.IO;
     using System.Linq;
     using System.Text.Json;
+    using Bank;
 
+    /// <summary>
+    /// Implements the <see cref="IAccountRepository"/> interface for
+    /// interacting with the account file system data store
+    /// </summary>
     public class AccountFileSystemRepository : IAccountRepository
     {
 
-        public void CreateAccount(Account account)
+        /// <summary>
+        /// Creates a new account entity
+        /// </summary>
+        /// <param name="account">The account to be created</param>
+        public Result<Account> CreateAccount(Account account)
         {
-            List<Account> accounts = GetAllAccounts();
+            Result<List<Account>> getAllAccountsResult = GetAllAccounts();
+            List<Account> accounts = getAllAccountsResult.Value;
             // Checking if there is any account that has the same account number
             // as the account we want to create
             if (accounts.Any(i => i.Number == account.Number))
             {
-                Console.WriteLine($"Unable to create account. Account number {account.Number} already exists");
-                return;
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    Message = $"Unable to create account. Account number {account.Number} already exists",
+                    ResultType = ResultType.Duplicate
+                };
             }
 
             accounts.Add(account);
@@ -27,11 +41,22 @@ namespace DataAccess
                 string accountsJson = JsonSerializer.Serialize(accounts);
                 writer.Write(accountsJson);
             }
+
+            return new Result<Account>()
+            {
+                Succeeded = true,
+                Value = account
+            };
         }
 
-        public void DeleteAccount(Account deletedAccount)
+        /// <summary>
+        /// Deletes the specified account entity
+        /// </summary>
+        /// <param name="deletedAccount">The account to be deleted</param>
+        public Result<Account> DeleteAccount(Account deletedAccount)
         {
-            List <Account> allAccounts = GetAllAccounts();
+            Result<List<Account>> getAllAccountsResult = GetAllAccounts();
+            List<Account> allAccounts = getAllAccountsResult.Value;
 
             //allAccounts.Remove(deletedAccount);
             allAccounts = allAccounts.Where(i => i.Number != deletedAccount.Number).ToList();
@@ -42,63 +67,115 @@ namespace DataAccess
             }
 
             Console.WriteLine($"Account {deletedAccount.Number} has been deleted");
+            // Operation was successfull
+            return new Result<Account>()
+            {
+                Succeeded = true,
+                Value = deletedAccount
+            };
         }
 
-        public List<Account> GetAllAccounts()
+        /// <summary>
+        /// Gets a list of all accounts in the system
+        /// </summary>
+        /// <returns>A list of all accounts in the system</returns>
+        public Result<List<Account>> GetAllAccounts()
         {
             List<Account> accounts = new List<Account>();
-            
+
             using (StreamReader reader = new StreamReader("../../../accounts.json"))
             {
                 string accountsJson = reader.ReadToEnd();
                 accounts = JsonSerializer.Deserialize<List<Account>>(accountsJson);
             }
-
-            return accounts;
+            Result<List<Account>> result = new Result<List<Account>>()
+            {
+                Succeeded = true,
+                Value = accounts
+            };
+            return result;
         }
 
-        public List<Account> GetAllUserAccounts(string userName)
+        /// <summary>
+        /// Gets a list of all accounts that are belong to the user with a given user name
+        /// </summary>
+        /// <param name="userName">Unique identifier of the user we want to retrieve accounts gor</param>
+        /// <returns>A list of all accounts that belong to the user</returns>
+        public List<Account> GetAllByUsername(string userName)
         {
             // Get all accounts in the system (json file)
-            List<Account> accounts = GetAllAccounts();
+            Result<List<Account>> getAllAccountsResult = GetAllAccounts();
+            List<Account> accounts = getAllAccountsResult.Value;
 
             // Filter the list to only have accounts for the given user name
             List<Account> userAccounts = accounts.Where(i => i.UserName == userName).ToList();
             return userAccounts;
         }
 
-        public Account GetByAccountNumber(int accountNumber)
+        /// <summary>
+        /// Gets an account with the given account number
+        /// </summary>
+        /// <param name="accountNumber">Unique account identifier</param>
+        /// <returns>The <see cref="Account"/> with the given account number, or null if no account exists with that number</returns>
+        public Result<Account> GetByAccountNumber(int accountNumber)
         {
-            List<Account> accounts = GetAllAccounts();
+            Result<List<Account>> getAllAccountsResult = GetAllAccounts();
+            List<Account> accounts = getAllAccountsResult.Value;
 
             // account will either be the account with the matching account number, or null
             // if no account has that number.
             Account account = accounts.Where(i => i.Number == accountNumber).FirstOrDefault();
-            return account;
+
+            if (account == null) // No account was found with the given account number
+            {
+                return new Result<Account>
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound,
+                    Message = $"No account exists with account number {accountNumber}"
+                };
+            }
+
+            // There is an account with the given account number
+            return new Result<Account>
+            {
+                Succeeded = true,
+                Value = account
+            };
         }
 
-        public Account GetById(string ID)
+        /// <summary>
+        /// Gets an account with the given account id
+        /// </summary>
+        /// <param name="id">Unique account identifier</param>
+        /// <returns>The <see cref="Account"/> with the given id, or null if no account exists with that id</returns>
+        public Account GetById(string id)
         {
-            List<Account> accounts = GetAllAccounts();
+            Result<List<Account>> getAllAccountsResult = GetAllAccounts();
+            List<Account> accounts = getAllAccountsResult.Value;
 
-            Account account = accounts.Where(i => i.Id == ID).FirstOrDefault();
+            Account account = accounts.Where(i => i.Id == id).FirstOrDefault();
             return account;
+
         }
 
-        public void UpdateAccount(Account updatedAccount)
+        /// <summary>
+        /// Updates the specified account entity
+        /// </summary>
+        /// <param name="updatedAccount">The account to be updated</param>
+        public Result<Account> UpdateAccount(Account updatedAccount)
         {
             // Check if the account we want to update exists
-            Account existingAccount = GetByAccountNumber(updatedAccount.Number);
-            if (existingAccount == null)
+            Result<Account> getByAccountNumberResult = GetByAccountNumber(updatedAccount.Number);
+            if (getByAccountNumberResult.Succeeded == false)
             {
-                Console.WriteLine($"Unable to update account. No account with account number {updatedAccount.Number} exists");
-                // function executes until it meets first return statement 
-                return;
+                return getByAccountNumberResult;
             }
 
             // We have verified that the account exists - update the account
-            List<Account> accounts = GetAllAccounts();
-            foreach(Account account in accounts )
+            Result<List<Account>> getAllAccountsResult = GetAllAccounts();
+            List<Account> accounts = getAllAccountsResult.Value;
+            foreach (Account account in accounts)
             {
                 if (account.Number == updatedAccount.Number)
                 {
@@ -111,6 +188,13 @@ namespace DataAccess
                 string accountsJson = JsonSerializer.Serialize(accounts);
                 writer.Write(accountsJson);
             }
+
+            // Operation was successfull
+            return new Result<Account>()
+            {
+                Succeeded = true,
+                Value = updatedAccount
+            };
         }
     }
 }
