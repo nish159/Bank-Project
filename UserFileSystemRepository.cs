@@ -7,45 +7,17 @@ namespace DataAccess
     using System.Linq;
     using System.Text.Json;
 
-    public interface IUserRepository
-    {
-        // function to get a list of users
-        List<User> GetAllUsers();
-        // function to get a list of all usernames 
-        List<User> GetAllUserNames(string userName);
-
-        // function to get a list of all first names
-        List<User> GetAllFirstNames(string firstName);
-
-        // function to get a list of all last names
-        List<User> GetAllLastNames(string lastName);
-
-        // function to get a list by first and last names 
-        List<User> GetFirstLast(string firstName, string lastName);
-
-        // function to get a single username 
-        User GetByUserName(string userName);
-
-        // function to create a user 
-        void CreatAUser(User user);
-
-        // function to update the user information 
-        void UpdateUser(User updatedUser);
-
-        // function to update the user information 
-        void UpdateUser(string oldUserName, User updatedUser);
-
-        // function to delete a user
-        void DeleteUser(User deleteUser);
-
-        // function to get by guid
-        User GetById(string ID);
-    }
-
+    /// <summary>
+    /// Implements the <see cref="IUserRepository"/> interface for
+    /// interacting with the user file system data store
+    /// </summary>
     public class UserFileSystemRepository : IUserRepository
     {
-        // you need to set the parameteres for  creating the user
-        public void CreatAUser(User user)
+        /// <summary>
+        /// Creates a new user data entity
+        /// </summary>
+        /// <param name="user">The user to be created</param>
+        public void CreateUser(User user)
         {
             List<User> users = GetAllUsers();
             // Checking if there is any account that has the same account number
@@ -64,72 +36,10 @@ namespace DataAccess
             }
         }
 
-        public void DeleteUser(User deleteUser)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<User> GetAllFirstNames(string firstName)
-        {
-            List<User> users = GetAllUsers();
-
-            List<User> allFirst = users.Where(i => i.FirstName == firstName).ToList();
-            return allFirst;
-        }
-
-        public List<User> GetAllLastNames(string lastName)
-        {
-            List<User> users = GetAllUsers();
-
-            List<User> allLast = users.Where(i => i.LastName == lastName).ToList();
-            return allLast;
-        }
-
-        public List<User> GetAllUserNames(string userName)
-        {
-            List<User> users = GetAllUsers();
-
-            List<User> allUsers = users.Where(i => i.UserName == userName).ToList();
-            return allUsers;
-        }
-
-        public List<User> GetAllUsers()
-        {
-            List<User> users = new List<User>();
-            using (StreamReader reader = new StreamReader("../../../users.json"))
-            {
-                string usersJson = reader.ReadToEnd();
-                users = JsonSerializer.Deserialize<List<User>>(usersJson);
-            }
-
-            return users;
-        }
-
-        public User GetById(string ID)
-        {
-            List<User> users = GetAllUsers();
-
-            User user = users.Where(i => i.Id == ID).FirstOrDefault();
-            return user;
-        }
-
-        public User GetByUserName(string userName)
-        {
-            List<User> users = GetAllUsers();
-
-            // user will either be the user with the matching username, or null if there is no account with that username
-            User user = users.Where(i => i.UserName == userName).FirstOrDefault();
-            return user;
-        }
-
-        public List<User> GetFirstLast(string firstName, string lastName)
-        {
-            List<User> users = GetAllUsers();
-
-            List<User> allUsers = users.Where(i => i.FirstName == firstName && i.LastName == lastName).ToList();
-            return allUsers;
-        }
-
+        /// <summary>
+        /// Updates the specified user data entity
+        /// </summary>
+        /// <param name="updatedUser">The user to be updated</param>
         public void UpdateUser(User updatedUser)
         {
             // Check if the account we want to update exists
@@ -142,7 +52,7 @@ namespace DataAccess
             }
 
             User userByUserName = GetByUserName(updatedUser.UserName);
-            if(userByUserName != null /*There is a user with the matching user name*/ && 
+            if (userByUserName != null /*There is a user with the matching user name*/ &&
                 userByUserName.Id != existingUser.Id /* The user with the mathing user name has a different id*/)
             {
                 Console.WriteLine($"Unable to upate user. Duplicate user name");
@@ -167,6 +77,11 @@ namespace DataAccess
             }
         }
 
+        /// <summary>
+        /// Updates the specified user data entity
+        /// </summary>
+        /// <param name="oldUserName">The user's user name before the update</param>
+        /// <param name="updatedUser">The user to be updated</param>
         public void UpdateUser(string oldUserName, User updatedUser)
         {
             // Check if the account we want to update exists
@@ -195,6 +110,111 @@ namespace DataAccess
                 writer.Write(usersJson);
 
             }
+        }
+
+        /// <summary>
+        /// Deletes the specified user data entity
+        /// </summary>
+        /// <param name="deleteUser">The user to be deleted</param>
+        public void DeleteUser(User deleteUser)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Gets a list of all users in the system
+        /// </summary>
+        /// <returns>A list of all <see cref="User"/>s in the system</returns>
+        public List<User> GetAllUsers()
+        {
+            List<User> users = new List<User>();
+            using (StreamReader reader = new StreamReader("../../../users.json"))
+            {
+                string usersJson = reader.ReadToEnd();
+                users = JsonSerializer.Deserialize<List<User>>(usersJson);
+            }
+
+            return users;
+        }
+
+        /// <summary>
+        /// Gets a list of all users that have the given user name
+        /// </summary>
+        /// <param name="userName">Unique user identifier</param>
+        /// <returns>A list of all <see cref="User"/>s that have the given user name</returns>
+        public List<User> GetAllByUserName(string userName)
+        {
+            List<User> users = GetAllUsers();
+
+            List<User> allUsers = users.Where(i => i.UserName == userName).ToList();
+            return allUsers;
+        }
+
+        /// <summary>
+        /// Gets a list of all users that have the given first name
+        /// </summary>
+        /// <param name="firstName">User's first name</param>
+        /// <returns>A list of all <see cref="User"/>s that have the given girst name</returns>
+        public List<User> GetAllByFirstName(string firstName)
+        {
+            List<User> users = GetAllUsers();
+
+            List<User> allFirst = users.Where(i => i.FirstName == firstName).ToList();
+            return allFirst;
+        }
+
+        /// <summary>
+        /// Gets a list of all users that have the given last name
+        /// </summary>
+        /// <param name="lastName">User's last name</param>
+        /// <returns>A list of all <see cref="User"/>s that have the given last name</returns>
+        public List<User> GetAllByLastName(string lastName)
+        {
+            List<User> users = GetAllUsers();
+
+            List<User> allLast = users.Where(i => i.LastName == lastName).ToList();
+            return allLast;
+        }
+
+        /// <summary>
+        /// Gets a list of all users that have the given first name and last name
+        /// </summary>
+        /// <param name="firstName">User's first name</param>
+        /// <param name="lastName">User's last name</param>
+        /// <returns>A list of all <see cref="User"/>s that have the given first name and last name</returns>
+        public List<User> GetAllByName(string firstName, string lastName)
+        {
+            List<User> users = GetAllUsers();
+
+            List<User> allUsers = users.Where(i => i.FirstName == firstName && i.LastName == lastName).ToList();
+            return allUsers;
+        }
+
+        /// <summary>
+        /// Gets the user with the given user name
+        /// </summary>
+        /// <param name="userName">Unique user identifier</param>
+        /// <returns>The <see cref="User"/> with the given user name, or null if no user exists with that user name</returns>
+        public User GetByUserName(string userName)
+        {
+            List<User> users = GetAllUsers();
+
+            // user will either be the user with the matching username, or null if there is no account with that username
+            User user = users.Where(i => i.UserName == userName).FirstOrDefault();
+            return user;
+        }
+
+        /// <summary>
+        /// Gets the user with the given user id
+        /// </summary>
+        /// <param name="id">Unique user identifier</param>
+        /// <returns>The <see cref="User"/> with the given id, or null if no user exists with that id</returns>
+        public User GetById(string ID)
+        {
+            List<User> users = GetAllUsers();
+
+            User user = users.Where(i => i.Id == ID).FirstOrDefault();
+            return user;
         }
     }
 }
