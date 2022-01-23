@@ -101,7 +101,7 @@ namespace DataAccess
         /// </summary>
         /// <param name="userName">Unique identifier of the user we want to retrieve accounts gor</param>
         /// <returns>A list of all accounts that belong to the user</returns>
-        public List<Account> GetAllByUsername(string userName)
+        public Result<List<Account>> GetAllByUsername(string userName)
         {
             // Get all accounts in the system (json file)
             Result<List<Account>> getAllAccountsResult = GetAllAccounts();
@@ -109,7 +109,12 @@ namespace DataAccess
 
             // Filter the list to only have accounts for the given user name
             List<Account> userAccounts = accounts.Where(i => i.UserName == userName).ToList();
-            return userAccounts;
+            Result<List<Account>> result = new Result<List<Account>>()
+            {
+                Succeeded = true,
+                Value = userAccounts
+            };
+            return result;
         }
 
         /// <summary>
@@ -149,14 +154,17 @@ namespace DataAccess
         /// </summary>
         /// <param name="id">Unique account identifier</param>
         /// <returns>The <see cref="Account"/> with the given id, or null if no account exists with that id</returns>
-        public Account GetById(string id)
+        public Result<Account> GetById(string id)
         {
             Result<List<Account>> getAllAccountsResult = GetAllAccounts();
             List<Account> accounts = getAllAccountsResult.Value;
 
             Account account = accounts.Where(i => i.Id == id).FirstOrDefault();
-            return account;
-
+            return new Result<Account>
+            {
+                Succeeded = true,
+                Value = account
+            };
         }
 
         /// <summary>
