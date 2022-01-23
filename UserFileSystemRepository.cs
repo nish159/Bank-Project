@@ -6,6 +6,7 @@ namespace DataAccess
     using System.IO;
     using System.Linq;
     using System.Text.Json;
+    using Bank;
 
     /// <summary>
     /// Implements the <see cref="IUserRepository"/> interface for
@@ -17,15 +18,20 @@ namespace DataAccess
         /// Creates a new user data entity
         /// </summary>
         /// <param name="user">The user to be created</param>
-        public void CreateUser(User user)
+        public Result<User> CreateUser(User user)
         {
-            List<User> users = GetAllUsers();
+            Result<List<User>> getAllUsersResult = GetAllUsers();
+            List<User> users = getAllUsersResult.Value;
             // Checking if there is any account that has the same account number
             // as the account we want to create
             if (users.Any(i => i.UserName == user.UserName))
             {
-                Console.WriteLine($"Unable to create username. Username {user.UserName} already exists");
-                return;
+                return new Result<User>()
+                {
+                    Succeeded = false,
+                    Message = $"Unable to create username. Username {user.UserName} already exists",
+                    ResultType = ResultType.Duplicate
+                };
             }
 
             users.Add(user);
@@ -34,33 +40,53 @@ namespace DataAccess
                 string usersJson = JsonSerializer.Serialize(users);
                 writer.Write(usersJson);
             }
+
+            return new Result<User>()
+            {
+                Succeeded = true,
+                Value = user
+            };
         }
 
         /// <summary>
         /// Updates the specified user data entity
         /// </summary>
         /// <param name="updatedUser">The user to be updated</param>
-        public void UpdateUser(User updatedUser)
+        public Result<User> UpdateUser(User updatedUser)
         {
             // Check if the account we want to update exists
-            User existingUser = GetById(updatedUser.Id);
-            if (existingUser == null)
+            Result<User> getAllUserNamesResult = GetById(updatedUser.Id);
+            if (getAllUserNamesResult.Succeeded == false)
             {
-                Console.WriteLine($"Unable to update user. No user found with ID {updatedUser.Id} exists");
-                // function executes until it meets first return statement 
-                return;
+                return getAllUserNamesResult;
             }
 
-            User userByUserName = GetByUserName(updatedUser.UserName);
+            Result<User> existingUser = GetById(updatedUser.Id);
+            if (existingUser == null)
+            {
+                return new Result<User>()
+                {
+                    Succeeded = false,
+                    Message = $"Unable to update user. No user found with ID {updatedUser.Id} exists",
+                    ResultType = ResultType.NotFound
+                };
+            }
+
+            Result<User> userByUserName = GetByUserName(updatedUser.UserName);
             if (userByUserName != null /*There is a user with the matching user name*/ &&
                 userByUserName.Id != existingUser.Id /* The user with the mathing user name has a different id*/)
             {
-                Console.WriteLine($"Unable to upate user. Duplicate user name");
-                return;
+                return new Result<User>()
+                {
+                    Succeeded = false,
+                    Message = $"Unable to upate user. Duplicate user name",
+                    ResultType = ResultType.Duplicate
+                };
             }
 
             // We have verified that the user exists - update the user
-            List<User> users = GetAllUsers();
+            Result<List<User>> getAllUsersResult = GetAllUsers();
+            List<User> users = getAllUsersResult.Value;
             foreach (User user in users)
             {
                 if (user.Id == updatedUser.Id)
@@ -75,6 +101,13 @@ namespace DataAccess
                 string usersJson = JsonSerializer.Serialize(users);
                 writer.Write(usersJson);
             }
+            
+            // Operation was successful
+            return new Result<User>()
+            {
+                Succeeded = true,
+                Value = updatedUser
+            };
         }
 
         /// <summary>
@@ -82,19 +115,23 @@ namespace DataAccess
         /// </summary>
         /// <param name="oldUserName">The user's user name before the update</param>
         /// <param name="updatedUser">The user to be updated</param>
-        public void UpdateUser(string oldUserName, User updatedUser)
+        public Result<User> UpdateUser(string oldUserName, User updatedUser)
         {
             // Check if the account we want to update exists
-            User existingUserName = GetByUserName(oldUserName);
-            if (existingUserName == null)
+            Result<User> existingUserName = GetByUserName(oldUserName);
+            if (existingUserName.Succeeded == false)
             {
-                Console.WriteLine($"Unable to update user. No user with that username {oldUserName} exists");
-                // function executes until it meets first return statement 
-                return;
+                return new Result<User>()
+                {
+                    Succeeded = false,
+                    Message = $"Unable to update user. No user with that username {oldUserName} exists",
+                    ResultType = ResultType.NotFound
+                };
             }
 
             // We have verified that the user exists - update the user
-            List<User> users = GetAllUsers();
+            Result<List<User>> getAllUsersResult = GetAllUsers();
+            List<User> users = getAllUsersResult.Value;
             foreach (User user in users)
             {
                 if (user.UserName == oldUserName)
@@ -110,22 +147,46 @@ namespace DataAccess
                 writer.Write(usersJson);
 
             }
+
+            // Operation was successful
+            return new Result<User>()
+            {
+                Succeeded = true,
+                Value = updatedUser
+            };
         }
 
         /// <summary>
         /// Deletes the specified user data entity
         /// </summary>
-        /// <param name="deleteUser">The user to be deleted</param>
-        public void DeleteUser(User deleteUser)
+        /// <param name="deletedUser">The user to be deleted</param>
+        public Result<User> DeleteUser(User deletedUser)
         {
-            throw new NotImplementedException();
+            Result<List<User>> getAllUsersResult = GetAllUsers();
+            List<User> allUsers = getAllUsersResult.Value;
+
+            //allUsers.Remove(deletedUser);
+            allUsers = allUsers.Where(i => i.UserName != deletedUser.UserName).ToList();
+            using (StreamWriter writer = new StreamWriter("../../../users.json"))
+            {
+                string userJson = JsonSerializer.Serialize(allUsers);
+                writer.Write(userJson);
+            }
+
+            Console.WriteLine($"User {deletedUser.UserName} has been deleted");
+            // Operation was successful
+            return new Result<User>()
+            {
+                Succeeded = true,
+                Value = deletedUser
+            };
         }
 
         /// <summary>
         /// Gets a list of all users in the system
         /// </summary>
         /// <returns>A list of all <see cref="User"/>s in the system</returns>
-        public List<User> GetAllUsers()
+        public Result<List<User>> GetAllUsers()
         {
             List<User> users = new List<User>();
             using (StreamReader reader = new StreamReader("../../../users.json"))
@@ -133,8 +194,12 @@ namespace DataAccess
                 string usersJson = reader.ReadToEnd();
                 users = JsonSerializer.Deserialize<List<User>>(usersJson);
             }
-
-            return users;
+            Result<List<User>> result = new Result<List<User>>()
+            {
+                Succeeded = true,
+                Value = users
+            };
+            return result;
         }
 
         /// <summary>
@@ -142,12 +207,20 @@ namespace DataAccess
         /// </summary>
         /// <param name="userName">Unique user identifier</param>
         /// <returns>A list of all <see cref="User"/>s that have the given user name</returns>
-        public List<User> GetAllByUserName(string userName)
+        public Result<List<User>> GetAllByUserName(string userName)
         {
-            List<User> users = GetAllUsers();
+            // Get all accounts in the system (json file)
+            Result<List<User>> getAllUsersResult = GetAllUsers();
+            List<User> users = getAllUsersResult.Value;
 
+            // Filter the list to only have accounts for the given user name
             List<User> allUsers = users.Where(i => i.UserName == userName).ToList();
-            return allUsers;
+            Result<List<User>> result = new Result<List<User>>()
+            {
+                Succeeded = true,
+                Value = allUsers
+            };
+            return result;
         }
 
         /// <summary>
@@ -155,12 +228,20 @@ namespace DataAccess
         /// </summary>
         /// <param name="firstName">User's first name</param>
         /// <returns>A list of all <see cref="User"/>s that have the given girst name</returns>
-        public List<User> GetAllByFirstName(string firstName)
+        public Result<List<User>> GetAllByFirstName(string firstName)
         {
-            List<User> users = GetAllUsers();
+            // Get all accounts in the system (json file)
+            Result<List<User>> getAllUsersResult = GetAllUsers();
+            List<User> users = getAllUsersResult.Value;
 
+            // Filter the list to only have accounts for the given first name
             List<User> allFirst = users.Where(i => i.FirstName == firstName).ToList();
-            return allFirst;
+            Result<List<User>> result = new Result<List<User>>()
+            {
+                Succeeded = true,
+                Value = allFirst
+            };
+            return result;
         }
 
         /// <summary>
@@ -168,12 +249,20 @@ namespace DataAccess
         /// </summary>
         /// <param name="lastName">User's last name</param>
         /// <returns>A list of all <see cref="User"/>s that have the given last name</returns>
-        public List<User> GetAllByLastName(string lastName)
+        public Result<List<User>> GetAllByLastName(string lastName)
         {
-            List<User> users = GetAllUsers();
+            // Get all accounts in the system (json file)
+            Result<List<User>> getAllUsersResult = GetAllUsers();
+            List<User> users = getAllUsersResult.Value;
 
+            // Filter the list to only have accounts for the given last name
             List<User> allLast = users.Where(i => i.LastName == lastName).ToList();
-            return allLast;
+            Result<List<User>> result = new Result<List<User>>()
+            {
+                Succeeded = true,
+                Value = allLast
+            };
+            return result;
         }
 
         /// <summary>
@@ -182,12 +271,20 @@ namespace DataAccess
         /// <param name="firstName">User's first name</param>
         /// <param name="lastName">User's last name</param>
         /// <returns>A list of all <see cref="User"/>s that have the given first name and last name</returns>
-        public List<User> GetAllByName(string firstName, string lastName)
+        public Result<List<User>> GetAllByName(string firstName, string lastName)
         {
-            List<User> users = GetAllUsers();
+            // Get all accounts in the system (json file)
+            Result<List<User>> getAllUsersResult = GetAllUsers();
+            List<User> users = getAllUsersResult.Value;
 
+            // Filter the list to only have accounts for the given all names
             List<User> allUsers = users.Where(i => i.FirstName == firstName && i.LastName == lastName).ToList();
-            return allUsers;
+            Result<List<User>> result = new Result<List<User>>()
+            {
+                Succeeded = true,
+                Value = allUsers
+            };
+            return result;
         }
 
         /// <summary>
@@ -195,13 +292,19 @@ namespace DataAccess
         /// </summary>
         /// <param name="userName">Unique user identifier</param>
         /// <returns>The <see cref="User"/> with the given user name, or null if no user exists with that user name</returns>
-        public User GetByUserName(string userName)
+        public Result<User> GetByUserName(string userName)
         {
-            List<User> users = GetAllUsers();
+            // Get all accounts in the system (json file)
+            Result<List<User>> getAllUsersResult = GetAllUsers();
+            List<User> users = getAllUsersResult.Value;
 
             // user will either be the user with the matching username, or null if there is no account with that username
             User user = users.Where(i => i.UserName == userName).FirstOrDefault();
-            return user;
+            return new Result<User>
+            {
+                Succeeded = true,
+                Value = user
+            };
         }
 
         /// <summary>
@@ -209,12 +312,17 @@ namespace DataAccess
         /// </summary>
         /// <param name="id">Unique user identifier</param>
         /// <returns>The <see cref="User"/> with the given id, or null if no user exists with that id</returns>
-        public User GetById(string ID)
+        public Result<User> GetById(string id)
         {
-            List<User> users = GetAllUsers();
+            Result<List<User>> getAllUsersResult = GetAllUsers();
+            List<User> users = getAllUsersResult.Value;
 
-            User user = users.Where(i => i.Id == ID).FirstOrDefault();
-            return user;
+            User user = users.Where(i => i.Id == id).FirstOrDefault();
+            return new Result<User>
+            {
+                Succeeded = true,
+                Value = user
+            };
         }
     }
 }
