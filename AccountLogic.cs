@@ -1,36 +1,48 @@
 namespace Logic
 {
+    using Bank;
     using DataAccess;
     using Models;
     using System;
-
+    using System.Collections.Generic;
+    using System.Text;
     public class AccountLogic : IAccountLogic
     {
         IAccountRepository _accountRepository;
         IUserRepository _userRepository;
-        public AccountLogic(IAccountRepository accountRespository, IUserRepository userRepository)
+
+        public AccountLogic(IAccountRepository accountRepository, IUserRepository userRepository)
         {
-            _accountRepository = accountRespository;
+            _accountRepository = accountRepository;
             _userRepository = userRepository;
         }
 
-        public decimal DepositAmount(int accountNumber, decimal amount)
+        public Result<decimal> DepositAmount(int accountNumber, decimal amount)
         {
             // Get the account
-            Account account = _accountRepository.GetByAccountNumber(accountNumber);
-            if (account == null)
+            Result<Account> getByAccountNumberResult = _accountRepository.GetByAccountNumber(accountNumber);
+            if (getByAccountNumberResult.Succeeded == false)
             {
-                Console.WriteLine($"Unable to deposit {amount} from account {accountNumber} - Account does not exist.");
-                return -1;
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = getByAccountNumberResult.ResultType,
+                    Message = $"Unable to deposit {amount} to account {accountNumber}. Reason: {getByAccountNumberResult.Message}."
+                };
             }
+            Account account = getByAccountNumberResult.Value;
 
             // Verify the amount you are depositing 
             if (amount < 0)
             {
-                Console.WriteLine($"You are depositing {amount} to this account {accountNumber}.");
-                return -1;
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = $"Unable to deposit {amount} from account {accountNumber} - Invalid amount."
+                };
             }
-            
+
             // Modify the balance of the account
             account.Amount = account.Amount + amount;
 
@@ -38,64 +50,142 @@ namespace Logic
             _accountRepository.UpdateAccount(account);
 
             // Return the updated balance of the account
-            return account.Amount;
+            return new Result<decimal>()
+            {
+                Succeeded = true,
+                Value = account.Amount
+            };
         }
 
-        public decimal DepositAmount(string firstName, string lastName, int accountNumber, decimal amount)
+        public Result<decimal> DepositAmount(string firstName, string lastName, int accountNumber, decimal amount)
         {
-            Validate(firstName, lastName, accountNumber);
+            Result<Account> getByAccountNumberResult = _accountRepository.GetByAccountNumber(accountNumber);
+            if (getByAccountNumberResult.Succeeded == false)
+            {
+                // Return Result<decimal>
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = getByAccountNumberResult.ResultType,
+                    Message = $"Unable to deposit {amount} to account {accountNumber}. Reason: {getByAccountNumberResult.Message}."
+                };
+            }
+            Account account = getByAccountNumberResult.Value;
 
-            // Call deposit function
-            Console.WriteLine("Your transaction was successful!");
+            User user = _userRepository.GetByUserName(account.UserName);
+            if (firstName != user.FirstName || lastName != user.LastName)
+            {
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound,
+                    Message = $"The given names do not match the name on the account."
+                };
+            }
+
             return DepositAmount(accountNumber, amount);
         }
 
-        public decimal TransferAmount(int sourceAccountNumber, string sourcePin, int destAccountNumber, string destFirstName, string destLastName, decimal amount)
+        public Result<decimal> TransferAmount(int accountNumber, decimal amount)
         {
-            // Validate the destination account information
-            if (Validate(destFirstName, destLastName, destAccountNumber) == false)
+            // Get the account 
+            Result<Account> getByAccountNumberResult = _accountRepository.GetByAccountNumber(accountNumber);
+            if (getByAccountNumberResult.Succeeded == false)
             {
-                Console.WriteLine($"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}");
-                return -1;
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = getByAccountNumberResult.ResultType,
+                    Message = $"Unable to deposit {amount} to account {accountNumber}. Reason: {getByAccountNumberResult.Message}."
+                };
             }
-
-            // A transfer is a combination of a withdraw and a deposit 
-            decimal withdrawResult = WithdrawAmount(sourceAccountNumber, sourcePin, amount);
-            if (withdrawResult == -1)
-            {
-                Console.WriteLine($"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}");
-                
-                // Function will return the amount if unable to transfer
-                DepositAmount(sourceAccountNumber, amount);
-                return -1;
-            }
-
-            decimal depositResult = DepositAmount(destFirstName, destLastName, destAccountNumber, amount);
-            if (depositResult == -1)
-            {
-                Console.WriteLine($"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}");
-                return -1;
-            }
-
-            Console.WriteLine("Your transfer was successful!");
-            return withdrawResult;
-        }
-
-        public decimal WithdrawAmount(int accountNumber, decimal amount)
-        {
-            // Get the account
-            Account account = _accountRepository.GetByAccountNumber(accountNumber);
-            if (account == null)
-            {
-                Console.WriteLine($"Unable to withdraw {amount} from account {accountNumber} - account does not exist.");
-                return -1;
-            }
+            Account account = getByAccountNumberResult.Value;
 
             // Verify that we have enough balance on the account
             if (account.Amount < amount)
             {
-                Console.WriteLine($"Unable to withdraw {amount} from account {accountNumber} - not enough balance, account balance {account.Amount}.");
-                return -1;
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = getByAccountNumberResult.ResultType,
+                    Message = $"Unable to transfer {amount} from account {accountNumber} - not enough balance, account balance {account.Amount}."
+                };
+            }
+
+            // Update the account
+            _accountRepository.UpdateAccount(account);
+
+            // Return the updated balance of the account
+            return new Result<decimal>()
+            {
+                Succeeded = true,
+                Value = account.Amount
+            };
+        }
+
+        public Result<decimal> TransferAmount(int sourceAccountNumber, string sourcePin, int destAccountNumber, string destFirstName, string destLastName, decimal amount)
+        {
+            // Validate the destination account information
+            if (Validate(destFirstName, destLastName, destAccountNumber) == false)
+            {
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = $"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}"
+                };
+            }
+
+            // A transfer is a combination of a withdraw and a deposit
+            Result<decimal> withDrawResult = WithdrawAmount(sourceAccountNumber, sourcePin, amount);
+            if (withDrawResult.Succeeded == false)
+            {
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = $"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}"
+                };
+            }
+
+            Result<decimal> depositResult = DepositAmount(destFirstName, destLastName, destAccountNumber, amount);
+            if (depositResult.Succeeded == false)
+            {
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = $"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}"
+                };
+            }
+
+            return withDrawResult;
+        }
+
+        public Result<decimal> WithdrawAmount(int accountNumber, decimal amount)
+        {
+            // Get the account
+            Result<Account> getByAccountNumberResult = _accountRepository.GetByAccountNumber(accountNumber);
+            if (getByAccountNumberResult.Succeeded == false)
+            {
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound,
+                    Message = $"Unable to withdraw {amount} from account {accountNumber} - account does not exist."
+                };
+            }
+            Account account = getByAccountNumberResult.Value;
+
+            // Verify that we have enough balance on the account
+            if (account.Amount < amount)
+            {
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound,
+                    Message = $"Unable to withdraw {amount} from account {accountNumber} - not enough balance, account balance {account.Amount}."
+                };
             }
 
             // Modify the balance of the account
@@ -105,42 +195,51 @@ namespace Logic
             _accountRepository.UpdateAccount(account);
 
             // Return the updated balance of the account
-            return account.Amount;
+            return new Result<decimal>()
+            {
+                Succeeded = true,
+                Value = account.Amount
+            };
         }
 
-        public decimal WithdrawAmount(int accountNumber, string pin, decimal amount)
+        public Result<decimal> WithdrawAmount(int accountNumber, string pin, decimal amount)
         {
-            // Verify the account number
-            Account account = _accountRepository.GetByAccountNumber(accountNumber);
-            if (account == null)
+            // Verify the account number 
+            Result<Account> getByAccountNumberResult = _accountRepository.GetByAccountNumber(accountNumber);
+            if (getByAccountNumberResult.Succeeded == false)
             {
-                Console.WriteLine("This account does not exist.");
-                return -1;
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound,
+                    Message = $"Unable to withdraw {amount} from account {accountNumber} - account does not exist."
+                };
             }
+            Account account = getByAccountNumberResult.Value;
 
             if (pin != account.Pin)
             {
-                Console.WriteLine("Incorrect pin.");
-                return -1;
+                return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = "Incorrect Pin"
+                };
             }
-
-            Console.WriteLine("Your transaction was successful!");
             return WithdrawAmount(accountNumber, amount);
         }
 
         private bool Validate(string firstName, string lastName, int accountNumber)
         {
-            // Verify the account number 
-            Account account = _accountRepository.GetByAccountNumber(accountNumber);
-            if (account == null)
+            Result<Account> getByAccountNumberResult = _accountRepository.GetByAccountNumber(accountNumber);
+            if (getByAccountNumberResult.Succeeded == false)
             {
                 Console.WriteLine("This account does not exist.");
                 return false;
             }
+            Account account = getByAccountNumberResult.Value;
 
-            // Verify the first and last name
             User user = _userRepository.GetByUserName(account.UserName);
-
             if (firstName != user.FirstName || lastName != user.LastName)
             {
                 Console.WriteLine("The names do not match the account number.");
