@@ -67,7 +67,7 @@ namespace DataAccess
             }
 
             Console.WriteLine($"Account {deletedAccount.Number} has been deleted");
-            // Operation was successfull
+            // Operation was successful
             return new Result<Account>()
             {
                 Succeeded = true,
