@@ -62,7 +62,7 @@ namespace DataAccess
             }
 
             Result<User> existingUser = GetById(updatedUser.Id);
-            if (existingUser == null)
+            if (existingUser.Succeeded == false)
             {
                 return new Result<User>()
                 {
@@ -72,9 +72,10 @@ namespace DataAccess
                 };
             }
 
-            Result<User> userByUserName = GetByUserName(updatedUser.UserName);
-            if (userByUserName != null /*There is a user with the matching user name*/ &&
-                userByUserName.Id != existingUser.Id /* The user with the mathing user name has a different id*/)
+            Result<User> getByUserNameResult = GetByUserName(updatedUser.UserName);
+            if (getByUserNameResult.Succeeded == true /*There is a user with the matching user name*/ &&
+                // getByUserNameResult.Value is the existing user with the given user name
+                getByUserNameResult.Value.Id != existingUser.Value.Id /* The user with the mathing user name has a different id*/)
             {
                 return new Result<User>()
                 {
