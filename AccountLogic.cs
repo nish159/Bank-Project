@@ -72,8 +72,8 @@ namespace Logic
             }
             Account account = getByAccountNumberResult.Value;
 
-            User user = _userRepository.GetByUserName(account.UserName);
-            if (firstName != user.FirstName || lastName != user.LastName)
+            Result<User> user = _userRepository.GetByUserName(account.UserName);
+            if (firstName != user.Value.FirstName || lastName != user.Value.LastName)
             {
                 return new Result<decimal>()
                 {
@@ -239,8 +239,8 @@ namespace Logic
             }
             Account account = getByAccountNumberResult.Value;
 
-            User user = _userRepository.GetByUserName(account.UserName);
-            if (firstName != user.FirstName || lastName != user.LastName)
+            Result<User> user = _userRepository.GetByUserName(account.UserName);
+            if (firstName != user.Value.FirstName || lastName != user.Value.LastName)
             {
                 Console.WriteLine("The names do not match the account number.");
                 return false;
