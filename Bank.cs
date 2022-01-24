@@ -1,4 +1,4 @@
-namespace BankProject
+namespace OnlineBankingProject
 {
     using System;
     using System.Collections.Generic;
