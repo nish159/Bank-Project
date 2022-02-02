@@ -37,14 +37,14 @@ namespace DataAccess
         /// <param name="account">The account to be created</param>
         public Result<Account> CreateAccount(Account account)
         {
-            PartitionKey key = new PartitionKey(account.UserName);
-            ItemResponse<Account> itemResponse = _container.CreateItemAsync<Account>(account, key).Result;
+            // Create and item. Partition key value and id must be provided in order to create
+            ItemResponse<Account> itemResponse = _container.CreateItemAsync<Account>(account, new PartitionKey(account.Id)).Result;
 
             // The query returned a list of accounts
             return new Result<Account>()
             {
                 Succeeded = true,
-                Value = account
+                Value = itemResponse
             };
         }
 
@@ -54,15 +54,14 @@ namespace DataAccess
         /// <param name="deletedAccount">The account to be deleted</param>
         public Result<Account> DeleteAccount(Account deletedAccount)
         {
-     
-            PartitionKey key = new PartitionKey(deletedAccount.UserName);
-            ItemResponse<Account> itemResponse = _container.DeleteItemAsync<Account>(deletedAccount.Id, key).Result;
+            // Delete an item. Partition key value and id must be provided in order to delete
+            ItemResponse<Account> itemResponse = _container.DeleteItemAsync<Account>(deletedAccount.Id, new PartitionKey(deletedAccount.UserName)).Result;
 
             // The query returned a list of accounts
             return new Result<Account>()
             {
                 Succeeded = true,
-                Value = deletedAccount
+                Value = itemResponse
             };
         }
 
@@ -151,9 +150,42 @@ namespace DataAccess
             };
         }
 
+        /// <summary>
+        /// Gets an account with the given account number
+        /// </summary>
+        /// <param name="accountNumber">Unique account identifier</param>
+        /// <returns>The <see cref="Account"/> with the given account number, or null if no account exists with that number</returns>
         public Result<Account> GetByAccountNumber(int accountNumber)
         {
-            throw new System.NotImplementedException();
+            // Building the sql query
+            string sqlQueryText = $"SELECT * FROM c WHERE c.Number = \"{accountNumber}\"";
+            QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+
+            // Querying the container
+            FeedIterator<Account> queryResultSetIterator = _container.GetItemQueryIterator<Account>(queryDefinition);
+
+            // Getting the results from the query
+            FeedResponse<Account> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+            // query stops working here
+            IEnumerable<Account> accounts = currentResultSet.Resource;
+
+            // Check if the operation returned any accounts
+            if (!accounts.Any())
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound
+                };
+            }
+
+            // The query returned an account, our result should be the only account in the list
+            Account account = accounts.FirstOrDefault();
+            return new Result<Account>()
+            {
+                Succeeded = true,
+                Value = account
+            };
         }
 
         /// <summary>
@@ -170,11 +202,9 @@ namespace DataAccess
             // Querying the container
             FeedIterator<Account> queryResultSetIterator = _container.GetItemQueryIterator<Account>(queryDefinition);
 
-
             // Getting the results from the query
             FeedResponse<Account> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
             IEnumerable<Account> accounts = currentResultSet.Resource;
-
 
             // Check if the operation returned any accounts
             if (!accounts.Any())
@@ -201,36 +231,7 @@ namespace DataAccess
         /// <param name="updatedAccount">The account to be updated</param>
         public Result<Account> UpdateAccount(Account updatedAccount)
         {
-            // Building the sql query
-            var sqlQueryText = $"UPDATE c SET c.Id WHERE c.Id = \"{updatedAccount}\"";
-            QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
-
-            // Querying the container
-            FeedIterator<Account> queryResultSetIterator = _container.GetItemQueryIterator<Account>(queryDefinition);
-
-
-            // Getting the results from the query
-            FeedResponse<Account> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
-            IEnumerable<Account> accounts = currentResultSet.Resource;
-
-
-            // Check if the operation returned any accounts
-            if (!accounts.Any())
-            {
-                return new Result<Account>()
-                {
-                    Succeeded = false,
-                    ResultType = ResultType.NotFound
-                };
-            }
-
-            // The query returned an account, our result should be the only account in the list
-            Account account = accounts.FirstOrDefault();
-            return new Result<Account>()
-            {
-                Succeeded = true,
-                Value = account
-            };
+            throw new System.NotImplementedException();
         }
     }
 }
