@@ -31,14 +31,39 @@ namespace DataAccess
             _container = _database.GetContainer(_containerId);
         }
 
+        /// <summary>
+        /// Creates a new account data entity
+        /// </summary>
+        /// <param name="account">The account to be created</param>
         public Result<Account> CreateAccount(Account account)
         {
-            throw new System.NotImplementedException();
+            PartitionKey key = new PartitionKey(account.UserName);
+            ItemResponse<Account> itemResponse = _container.CreateItemAsync<Account>(account, key).Result;
+
+            // The query returned a list of accounts
+            return new Result<Account>()
+            {
+                Succeeded = true,
+                Value = account
+            };
         }
 
+        /// <summary>
+        /// Deletes the specified account data entity
+        /// </summary>
+        /// <param name="deletedAccount">The account to be deleted</param>
         public Result<Account> DeleteAccount(Account deletedAccount)
         {
-            throw new System.NotImplementedException();
+     
+            PartitionKey key = new PartitionKey(deletedAccount.UserName);
+            ItemResponse<Account> itemResponse = _container.DeleteItemAsync<Account>(deletedAccount.Id, key).Result;
+
+            // The query returned a list of accounts
+            return new Result<Account>()
+            {
+                Succeeded = true,
+                Value = deletedAccount
+            };
         }
 
         /// <summary>
@@ -48,7 +73,7 @@ namespace DataAccess
         public Result<List<Account>> GetAllAccounts()
         {
             // Building the sql query
-            var sqlQueryText = "SELECT * FROM accounts";
+            string sqlQueryText = "SELECT * FROM accounts";
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
 
             // Querying the container
@@ -91,7 +116,7 @@ namespace DataAccess
         public Result<List<Account>> GetAllByUsername(string userName)
         {
             // Building the sql query
-            var sqlQueryText = $"SELECT * FROM c WHERE c.UserName = \"{userName}\"";
+            string sqlQueryText = $"SELECT * FROM c WHERE c.UserName = \"{userName}\"";
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
 
             // Querying the container
@@ -139,7 +164,7 @@ namespace DataAccess
         public Result<Account> GetById(string id)
         {
             // Building the sql query
-            var sqlQueryText = $"SELECT * FROM c WHERE c.Id = \"{id}\"";
+            string sqlQueryText = $"SELECT * FROM c WHERE c.Id = \"{id}\"";
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
 
             // Querying the container
@@ -170,9 +195,42 @@ namespace DataAccess
             };
         }
 
+        /// <summary>
+        /// Updates the specified account data entity
+        /// </summary>
+        /// <param name="updatedAccount">The account to be updated</param>
         public Result<Account> UpdateAccount(Account updatedAccount)
         {
-            throw new System.NotImplementedException();
+            // Building the sql query
+            var sqlQueryText = $"UPDATE c SET c.Id WHERE c.Id = \"{updatedAccount}\"";
+            QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+
+            // Querying the container
+            FeedIterator<Account> queryResultSetIterator = _container.GetItemQueryIterator<Account>(queryDefinition);
+
+
+            // Getting the results from the query
+            FeedResponse<Account> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+            IEnumerable<Account> accounts = currentResultSet.Resource;
+
+
+            // Check if the operation returned any accounts
+            if (!accounts.Any())
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound
+                };
+            }
+
+            // The query returned an account, our result should be the only account in the list
+            Account account = accounts.FirstOrDefault();
+            return new Result<Account>()
+            {
+                Succeeded = true,
+                Value = account
+            };
         }
     }
 }
