@@ -41,23 +41,18 @@ namespace DataAccess
             throw new System.NotImplementedException();
         }
 
+        /// <summary>
+        /// Gets a list of all accounts in the system
+        /// </summary>
+        /// <returns>A list of all <see cref="Account"/>s in the system</returns>
         public Result<List<Account>> GetAllAccounts()
         {
-            throw new System.NotImplementedException();
-        }
-
-        public Result<List<Account>> GetAllByUsername(string userName)
-        {
             // Building the sql query
-            var sqlQueryText = $"SELECT * FROM c WHERE c.UserName = \"{userName}\"";
+            var sqlQueryText = "SELECT * FROM accounts";
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
-
-
 
             // Querying the container
             FeedIterator<Account> queryResultSetIterator = _container.GetItemQueryIterator<Account>(queryDefinition);
-
-
 
             // Getting the results from the query
             List<Account> accounts = new List<Account>();
@@ -70,8 +65,6 @@ namespace DataAccess
                 }
             }
 
-
-
             // Check if the operation returned any accounts
             if (!accounts.Any())
             {
@@ -82,7 +75,48 @@ namespace DataAccess
                 };
             }
 
+            // The query returned a list of accounts
+            return new Result<List<Account>>()
+            {
+                Succeeded = true,
+                Value = accounts
+            };
+        }
 
+        /// <summary>
+        /// Gets a list of all accounts that are belong to the user with a given user name
+        /// </summary>
+        /// <param name="userName">Unique identifier of the user we want to retrieve accounts for</param>
+        /// <returns>A list of all <see cref="Account"/>s that belong to the user</returns>
+        public Result<List<Account>> GetAllByUsername(string userName)
+        {
+            // Building the sql query
+            var sqlQueryText = $"SELECT * FROM c WHERE c.UserName = \"{userName}\"";
+            QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+
+            // Querying the container
+            FeedIterator<Account> queryResultSetIterator = _container.GetItemQueryIterator<Account>(queryDefinition);
+
+            // Getting the results from the query
+            List<Account> accounts = new List<Account>();
+            while (queryResultSetIterator.HasMoreResults)
+            {
+                FeedResponse<Account> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+                foreach (Account account in currentResultSet)
+                {
+                    accounts.Add(account);
+                }
+            }
+
+            // Check if the operation returned any accounts
+            if (!accounts.Any())
+            {
+                return new Result<List<Account>>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound
+                };
+            }
 
             // The query returned a list of accounts
             return new Result<List<Account>>()
@@ -97,6 +131,11 @@ namespace DataAccess
             throw new System.NotImplementedException();
         }
 
+        /// <summary>
+        /// Gets the account with the given account id
+        /// </summary>
+        /// <param name="id">Unique account identifier</param>
+        /// <returns>The <see cref="Account"/> with the given id, or null if no account exists with that id</returns>
         public Result<Account> GetById(string id)
         {
             // Building the sql query
