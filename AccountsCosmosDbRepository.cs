@@ -1,11 +1,11 @@
-using Bank;
-using Microsoft.Azure.Cosmos;
-using Models;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace DataAccess
 {
+    using Bank;
+    using Microsoft.Azure.Cosmos;
+    using Models;
+    using System.Collections.Generic;
+    using System.Linq;
+    
     /// <summary>
     /// Defines the interface for interacting with the account data store.
     /// </summary>
