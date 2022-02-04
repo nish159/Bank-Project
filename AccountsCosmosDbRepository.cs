@@ -5,7 +5,7 @@ namespace DataAccess
     using Models;
     using System.Collections.Generic;
     using System.Linq;
-    
+
     /// <summary>
     /// Defines the interface for interacting with the account data store.
     /// </summary>
@@ -49,7 +49,7 @@ namespace DataAccess
             // Create and item. Partition key value and id must be provided in order to create
             ItemResponse<Account> itemResponse = _container.CreateItemAsync<Account>(account, new PartitionKey(account.Id)).Result;
 
-            // Check if the cosmos operation was successfull or not. Create returns 204 No Content when successfull
+            // Check if the cosmos operation was successful or not. Create returns 204 No Content when successful
             if (itemResponse.StatusCode == System.Net.HttpStatusCode.Created)
             {
                 return new Result<Account>()
@@ -60,7 +60,7 @@ namespace DataAccess
                 };
             }
 
-            // Check if the cosmos operation was successfull or not.
+            // Check if the cosmos operation was successful or not.
             // Create returns 409 Conflict when the id already exists
             if (itemResponse.StatusCode == System.Net.HttpStatusCode.Conflict)
             {
@@ -97,7 +97,7 @@ namespace DataAccess
             // Delete an item. Partition key value and id must be provided in order to delete
             ItemResponse<Account> itemResponse = _container.DeleteItemAsync<Account>(deletedAccount.Id, new PartitionKey(deletedAccount.UserName)).Result;
 
-            // Check if the cosmos operation was successfull or not. Delete returns 204 No Content when successfull
+            // Check if the cosmos operation was successful or not. Delete returns 204 No Content when successful
             if(itemResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 return new Result<Account>()
