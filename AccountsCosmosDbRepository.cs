@@ -71,7 +71,7 @@ namespace DataAccess
                 };
             }
 
-            // The operation was not successfulanm 
+            // The operation was not successful
             return new Result<Account>()
             {
                 Succeeded = false,
