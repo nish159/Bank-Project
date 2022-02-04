@@ -37,14 +37,45 @@ namespace DataAccess
         /// <param name="account">The account to be created</param>
         public Result<Account> CreateAccount(Account account)
         {
+            if (account == null)
+            {
+                return new Result<Account>
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData
+                };
+            }
+
             // Create and item. Partition key value and id must be provided in order to create
             ItemResponse<Account> itemResponse = _container.CreateItemAsync<Account>(account, new PartitionKey(account.Id)).Result;
 
-            // The query returned a list of accounts
+            // Check if the cosmos operation was successfull or not. Create returns 204 No Content when successfull
+            if (itemResponse.StatusCode == System.Net.HttpStatusCode.Created)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = true,
+                    ResultType = ResultType.Success,
+                    Value = itemResponse.Resource
+                };
+            }
+
+            // Check if the cosmos operation was successfull or not.
+            // Create returns 409 Conflict when the id already exists
+            if (itemResponse.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.Duplicate,
+                };
+            }
+
+            // The operation was not successfulanm 
             return new Result<Account>()
             {
-                Succeeded = true,
-                Value = itemResponse
+                Succeeded = false,
+                ResultType = ResultType.DataStoreError
             };
         }
 
@@ -54,14 +85,42 @@ namespace DataAccess
         /// <param name="deletedAccount">The account to be deleted</param>
         public Result<Account> DeleteAccount(Account deletedAccount)
         {
+            if(deletedAccount == null)
+            {
+                return new Result<Account>
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData
+                };
+            }
+
             // Delete an item. Partition key value and id must be provided in order to delete
             ItemResponse<Account> itemResponse = _container.DeleteItemAsync<Account>(deletedAccount.Id, new PartitionKey(deletedAccount.UserName)).Result;
+
+            // Check if the cosmos operation was successfull or not. Delete returns 204 No Content when successfull
+            if(itemResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound
+                };
+            }
+
+            if(itemResponse.StatusCode != System.Net.HttpStatusCode.NoContent)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.DataStoreError
+                };
+            }
 
             // The query returned a list of accounts
             return new Result<Account>()
             {
                 Succeeded = true,
-                Value = itemResponse
+                Value = deletedAccount
             };
         }
 
@@ -158,7 +217,7 @@ namespace DataAccess
         public Result<Account> GetByAccountNumber(int accountNumber)
         {
             // Building the sql query
-            string sqlQueryText = $"SELECT * FROM c WHERE c.Number = \"{accountNumber}\"";
+            string sqlQueryText = $"SELECT * FROM c WHERE c.Number = {accountNumber}";
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
 
             // Querying the container
@@ -231,7 +290,15 @@ namespace DataAccess
         /// <param name="updatedAccount">The account to be updated</param>
         public Result<Account> UpdateAccount(Account updatedAccount)
         {
-            throw new System.NotImplementedException();
+            ItemResponse<Account> itemResponse = _container.ReadItemAsync<Account>(updatedAccount.Id, new PartitionKey((double)updatedAccount.Amount)).Result;
+            Account item = itemResponse.Resource;
+
+            // The query returned an account, our result ahould be the only account in the list
+            return new Result<Account>()
+            {
+                Succeeded = true,
+                Value = item
+            };
         }
     }
 }
