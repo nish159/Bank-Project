@@ -125,6 +125,43 @@ namespace DataAccess
         }
 
         /// <summary>
+        /// Updates the specified account data entity
+        /// </summary>
+        /// <param name="updatedAccount">The account to be updated</param>
+        public Result<Account> UpdateAccount(Account updatedAccount)
+        {
+            if (updatedAccount == null)
+            {
+                return new Result<Account>
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData
+                };
+            }
+
+            // Update an item. Partition key value and id must be provided in order to update
+            ItemResponse<Account> itemResponse = _container.ReplaceItemAsync<Account>(updatedAccount, id:updatedAccount.Id, partitionKey: new PartitionKey(updatedAccount.UserName)).Result;
+
+            // Check if the cosmos operation was successful or not.
+            // Create returns 409 Conflict when the id already exists
+            if (itemResponse.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.Duplicate,
+                };
+            }
+
+            // The query returned a list of accounts 
+            return new Result<Account>()
+            {
+                Succeeded = true,
+                Value = updatedAccount
+            };
+        }
+
+        /// <summary>
         /// Gets a list of all accounts in the system
         /// </summary>
         /// <returns>A list of all <see cref="Account"/>s in the system</returns>
@@ -281,23 +318,6 @@ namespace DataAccess
             {
                 Succeeded = true,
                 Value = account
-            };
-        }
-
-        /// <summary>
-        /// Updates the specified account data entity
-        /// </summary>
-        /// <param name="updatedAccount">The account to be updated</param>
-        public Result<Account> UpdateAccount(Account updatedAccount)
-        {
-            ItemResponse<Account> itemResponse = _container.ReadItemAsync<Account>(updatedAccount.Id, new PartitionKey((double)updatedAccount.Amount)).Result;
-            Account item = itemResponse.Resource;
-
-            // The query returned an account, our result ahould be the only account in the list
-            return new Result<Account>()
-            {
-                Succeeded = true,
-                Value = item
             };
         }
     }
