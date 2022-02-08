@@ -400,31 +400,25 @@ namespace DataAccess
             FeedIterator<Models.User> queryResultSetIterator = _container.GetItemQueryIterator<Models.User>(queryDefinition);
 
             // Getting the results from the query
-            List<Models.User> users = new List<Models.User>();
-            while (queryResultSetIterator.HasMoreResults)
-            {
-                FeedResponse<Models.User> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
-                foreach (Models.User user in currentResultSet)
-                {
-                    users.Add(user);
-                }
-            }
+            FeedResponse<Models.User> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+            IEnumerable<Models.User> users = currentResultSet.Resource;
 
             // Check if the operation returned any accounts
             if (!users.Any())
             {
-                return new Result<Models.User>
+                return new Result<Models.User>()
                 {
                     Succeeded = false,
                     ResultType = ResultType.NotFound
                 };
             }
 
-            // The query returned a list of accounts
-            return new Result<Models.User>
+            // The query returned an account, our result should be the only account in the list
+            Models.User user = users.FirstOrDefault();
+            return new Result<Models.User>()
             {
                 Succeeded = true,
-                Value = users
+                Value = user
             };
         }
 
