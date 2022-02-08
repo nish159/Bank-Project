@@ -392,7 +392,40 @@ namespace DataAccess
         /// <returns>The <see cref="User"/> with the given user name, or null if no user exists with that user name</returns>
         public Result<Models.User> GetByUserName(string userName)
         {
-            throw new System.NotImplementedException();
+            // Building the sql query
+            string sqlQueryText = $"SELECT * FROM c WHERE c.UserName = \"{userName}\"";
+            QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+
+            // Querying the container
+            FeedIterator<Models.User> queryResultSetIterator = _container.GetItemQueryIterator<Models.User>(queryDefinition);
+
+            // Getting the results from the query
+            List<Models.User> users = new List<Models.User>();
+            while (queryResultSetIterator.HasMoreResults)
+            {
+                FeedResponse<Models.User> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+                foreach (Models.User user in currentResultSet)
+                {
+                    users.Add(user);
+                }
+            }
+
+            // Check if the operation returned any accounts
+            if (!users.Any())
+            {
+                return new Result<Models.User>
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound
+                };
+            }
+
+            // The query returned a list of accounts
+            return new Result<Models.User>
+            {
+                Succeeded = true,
+                Value = users
+            };
         }
 
         /// <summary>
