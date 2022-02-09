@@ -122,7 +122,34 @@ namespace DataAccess
         /// <param name="updatedUser">The user to be updated</param>
         public Result<Models.User> UpdateUser(string oldUserName, Models.User updatedUser)
         {
-            throw new System.NotImplementedException();
+            if (oldUserName == null)
+            {
+                return new Result<Models.User>
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData
+                };
+            }
+
+            ItemResponse<Models.User> itemResponse = _container.ReadItemAsync<Models.User>(oldUserName, new PartitionKey(updatedUser.UserName)).Result;
+
+            // Check if the cosmos operation exist.
+            // Create returns 404 Not Found oldusername may have been changed or deleted
+            if (itemResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return new Result<Models.User>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound,
+                };
+            }
+
+            // The query returned a list of accounts 
+            return new Result<Models.User>()
+            {
+                Succeeded = true,
+                Value = updatedUser
+            };
         }
 
         /// <summary>
