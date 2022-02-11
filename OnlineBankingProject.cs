@@ -10,7 +10,7 @@ namespace OnlineBankingProject
     using Microsoft.AspNetCore.Cryptography.KeyDerivation;
     using Microsoft.Extensions.DependencyInjection;
 
-    class Bank
+    class OnlineBankingProject
     {
         private static IUserRepository _userRepository;
         private static IAccountRepository _accountRepository;
