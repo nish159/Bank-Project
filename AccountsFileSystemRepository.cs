@@ -183,7 +183,7 @@ namespace DataAccess
             }
 
             // We have verified that the account exists - update the account
-            Result<List<Account>> getAllAccountsResult = GetAllAccountsAsync().Result;
+            Result<List<Account>> getAllAccountsResult = await GetAllAccountsAsync();
             List<Account> accounts = getAllAccountsResult.Value;
             foreach (Account account in accounts)
             {
