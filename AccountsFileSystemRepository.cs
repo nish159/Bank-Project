@@ -7,6 +7,7 @@ namespace DataAccess
     using System.Linq;
     using System.Text.Json;
     using Bank;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Implements the <see cref="IAccountRepository"/> interface for
@@ -19,9 +20,9 @@ namespace DataAccess
         /// Creates a new account entity
         /// </summary>
         /// <param name="account">The account to be created</param>
-        public Result<Account> CreateAccount(Account account)
+        public async Task<Result<Account>> CreateAccountAsync(Account account)
         {
-            Result<List<Account>> getAllAccountsResult = GetAllAccounts();
+            Result<List<Account>> getAllAccountsResult = await GetAllAccountsAsync();
             List<Account> accounts = getAllAccountsResult.Value;
             // Checking if there is any account that has the same account number
             // as the account we want to create
@@ -53,9 +54,9 @@ namespace DataAccess
         /// Deletes the specified account entity
         /// </summary>
         /// <param name="deletedAccount">The account to be deleted</param>
-        public Result<Account> DeleteAccount(Account deletedAccount)
+        public async Task<Result<Account>> DeleteAccountAsync(Account deletedAccount)
         {
-            Result<List<Account>> getAllAccountsResult = GetAllAccounts();
+            Result<List<Account>> getAllAccountsResult = await GetAllAccountsAsync();
             List<Account> allAccounts = getAllAccountsResult.Value;
 
             //allAccounts.Remove(deletedAccount);
@@ -79,13 +80,13 @@ namespace DataAccess
         /// Gets a list of all accounts in the system
         /// </summary>
         /// <returns>A list of all accounts in the system</returns>
-        public Result<List<Account>> GetAllAccounts()
+        public async Task<Result<List<Account>>> GetAllAccountsAsync()
         {
             List<Account> accounts = new List<Account>();
 
             using (StreamReader reader = new StreamReader("../../../accounts.json"))
             {
-                string accountsJson = reader.ReadToEnd();
+                string accountsJson = await reader.ReadToEndAsync();
                 accounts = JsonSerializer.Deserialize<List<Account>>(accountsJson);
             }
             Result<List<Account>> result = new Result<List<Account>>()
@@ -101,10 +102,10 @@ namespace DataAccess
         /// </summary>
         /// <param name="userName">Unique identifier of the user we want to retrieve accounts gor</param>
         /// <returns>A list of all accounts that belong to the user</returns>
-        public Result<List<Account>> GetAllByUsername(string userName)
+        public async Task<Result<List<Account>>> GetAllByUsernameAsync(string userName)
         {
             // Get all accounts in the system (json file)
-            Result<List<Account>> getAllAccountsResult = GetAllAccounts();
+            Result<List<Account>> getAllAccountsResult = await GetAllAccountsAsync();
             List<Account> accounts = getAllAccountsResult.Value;
 
             // Filter the list to only have accounts for the given user name
@@ -122,9 +123,9 @@ namespace DataAccess
         /// </summary>
         /// <param name="accountNumber">Unique account identifier</param>
         /// <returns>The <see cref="Account"/> with the given account number, or null if no account exists with that number</returns>
-        public Result<Account> GetByAccountNumber(int accountNumber)
+        public async Task<Result<Account>> GetByAccountNumberAsync(int accountNumber)
         {
-            Result<List<Account>> getAllAccountsResult = GetAllAccounts();
+            Result<List<Account>> getAllAccountsResult = await GetAllAccountsAsync();
             List<Account> accounts = getAllAccountsResult.Value;
 
             // account will either be the account with the matching account number, or null
@@ -154,9 +155,9 @@ namespace DataAccess
         /// </summary>
         /// <param name="id">Unique account identifier</param>
         /// <returns>The <see cref="Account"/> with the given id, or null if no account exists with that id</returns>
-        public Result<Account> GetById(string id)
+        public async Task<Result<Account>> GetByIdAsync(string id)
         {
-            Result<List<Account>> getAllAccountsResult = GetAllAccounts();
+            Result<List<Account>> getAllAccountsResult = await GetAllAccountsAsync();
             List<Account> accounts = getAllAccountsResult.Value;
 
             Account account = accounts.Where(i => i.Id == id).FirstOrDefault();
@@ -172,17 +173,17 @@ namespace DataAccess
         /// Updates the specified account entity
         /// </summary>
         /// <param name="updatedAccount">The account to be updated</param>
-        public Result<Account> UpdateAccount(Account updatedAccount)
+        public async Task<Result<Account>> UpdateAccountAsync(Account updatedAccount)
         {
             // Check if the account we want to update exists
-            Result<Account> getByAccountNumberResult = GetByAccountNumber(updatedAccount.Number);
+            Result<Account> getByAccountNumberResult = await GetByAccountNumberAsync(updatedAccount.Number);
             if (getByAccountNumberResult.Succeeded == false)
             {
                 return getByAccountNumberResult;
             }
 
             // We have verified that the account exists - update the account
-            Result<List<Account>> getAllAccountsResult = GetAllAccounts();
+            Result<List<Account>> getAllAccountsResult = GetAllAccountsAsync().Result;
             List<Account> accounts = getAllAccountsResult.Value;
             foreach (Account account in accounts)
             {
@@ -206,3 +207,4 @@ namespace DataAccess
             };
         }
     }
+}
