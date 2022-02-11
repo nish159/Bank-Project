@@ -5,6 +5,7 @@ namespace DataAccess
     using Models;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Defines the interface for interacting with the account data store.
@@ -34,7 +35,7 @@ namespace DataAccess
         /// Creates a new user data entity
         /// </summary>
         /// <param name="user">The user to be created</param>
-        public Result<BankUser> CreateUser(BankUser user)
+        public async Task<Result<BankUser>> CreateUserAsync(BankUser user)
         {
             if (user == null)
             {
@@ -46,7 +47,7 @@ namespace DataAccess
             }
 
             // Create and item. Partition key value and id must be provided in order to create
-            ItemResponse<BankUser> itemResponse = _container.CreateItemAsync<BankUser>(user, new PartitionKey(user.Id)).Result;
+            ItemResponse<BankUser> itemResponse = await _container.CreateItemAsync<BankUser>(user, new PartitionKey(user.Id));
 
             // Check if the cosmos operation was successful or not. Create returns 204 No Content when successful
             if (itemResponse.StatusCode == System.Net.HttpStatusCode.Created)
@@ -82,7 +83,7 @@ namespace DataAccess
         /// Updates the specified user data entity
         /// </summary>
         /// <param name="updatedUser">The user to be updated</param>
-        public Result<BankUser> UpdateUser(BankUser updatedUser)
+        public async Task<Result<BankUser>> UpdateUserAsync(BankUser updatedUser)
         {
             if (updatedUser == null)
             {
@@ -94,7 +95,7 @@ namespace DataAccess
             }
 
             // Verify that no other user has the updated username
-            ItemResponse<BankUser> getUserResponse = _container.ReadItemAsync<BankUser>(updatedUser.UserName, new PartitionKey(updatedUser.UserName)).Result;
+            ItemResponse<BankUser> getUserResponse = await _container.ReadItemAsync<BankUser>(updatedUser.UserName, new PartitionKey(updatedUser.UserName));
             if(getUserResponse.StatusCode == System.Net.HttpStatusCode.OK) // there is a user in the system with the user name
             {
                 BankUser existingUser = getUserResponse.Resource;
@@ -111,7 +112,7 @@ namespace DataAccess
             }
 
             // Update an item. Partition key value and id must be provided in order to update
-            ItemResponse<BankUser> itemResponse = _container.ReplaceItemAsync<BankUser>(updatedUser, id: updatedUser.Id, partitionKey: new PartitionKey(updatedUser.UserName)).Result;
+            ItemResponse<BankUser> itemResponse = await _container.ReplaceItemAsync<BankUser>(updatedUser, id: updatedUser.Id, partitionKey: new PartitionKey(updatedUser.UserName));
 
             // Check if the cosmos operation was successful or not.
             // Create returns 409 Conflict when the id already exists
@@ -137,7 +138,7 @@ namespace DataAccess
         /// </summary>
         /// <param name="oldUserName">The user's user name before the update</param>
         /// <param name="updatedUser">The user to be updated</param>
-        public Result<BankUser> UpdateUser(string oldUserName, BankUser updatedUser)
+        public async Task<Result<BankUser>> UpdateUserAsync(string oldUserName, BankUser updatedUser)
         {
             if (oldUserName == null)
             {
@@ -148,7 +149,7 @@ namespace DataAccess
                 };
             }
 
-            ItemResponse<BankUser> itemResponse = _container.ReadItemAsync<BankUser>(oldUserName, new PartitionKey(updatedUser.UserName)).Result;
+            ItemResponse<BankUser> itemResponse = await _container.ReadItemAsync<BankUser>(oldUserName, new PartitionKey(updatedUser.UserName));
 
             // Check if the cosmos operation exist.
             // Create returns 404 Not Found oldusername may have been changed or deleted
@@ -173,7 +174,7 @@ namespace DataAccess
         /// Deletes the specified user data entity
         /// </summary>
         /// <param name="deleteUser">The user to be deleted</param>
-        public Result<BankUser> DeleteUser(BankUser deleteUser)
+        public async Task<Result<BankUser>> DeleteUserAsync(BankUser deleteUser)
         {
             if (deleteUser == null)
             {
@@ -185,7 +186,7 @@ namespace DataAccess
             }
 
             // Delete an item. Partition key value and id must be provided in order to delete
-            ItemResponse<BankUser> itemResponse = _container.DeleteItemAsync<BankUser>(deleteUser.Id, new PartitionKey(deleteUser.UserName)).Result;
+            ItemResponse<BankUser> itemResponse = await _container.DeleteItemAsync<BankUser>(deleteUser.Id, new PartitionKey(deleteUser.UserName));
 
             // Check if the cosmos operation was successful or not. Delete returns 204 No Content when successful
             if (itemResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -218,7 +219,7 @@ namespace DataAccess
         /// Gets a list of all users in the system
         /// </summary>
         /// <returns>A list of all <see cref="BankUser"/>s in the system</returns>
-        public Result<List<BankUser>> GetAllUsers()
+        public async Task<Result<List<BankUser>>> GetAllUsersAsync()
         {
             // Building the sql query
             string sqlQueryText = "SELECT * FROM users";
@@ -231,7 +232,7 @@ namespace DataAccess
             List<BankUser> users = new List<BankUser>();
             while (queryResultSetIterator.HasMoreResults)
             {
-                FeedResponse<BankUser> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+                FeedResponse<BankUser> currentResultSet = await queryResultSetIterator.ReadNextAsync();
                 foreach (BankUser user in currentResultSet)
                 {
                     users.Add(user);
@@ -261,7 +262,7 @@ namespace DataAccess
         /// </summary>
         /// <param name="userName">Unique user identifier</param>
         /// <returns>A list of all <see cref="BankUser"/>s that have the given user name</returns>
-        public Result<List<BankUser>> GetAllByUserName(string userName)
+        public async Task<Result<List<BankUser>>> GetAllByUserNameAsync(string userName)
         {
             // Building the sql query
             string sqlQueryText = $"SELECT * FROM c WHERE c.UserName = \"{userName}\"";
@@ -274,7 +275,7 @@ namespace DataAccess
             List<BankUser> users = new List<BankUser>();
             while (queryResultSetIterator.HasMoreResults)
             {
-                FeedResponse<BankUser> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+                FeedResponse<BankUser> currentResultSet = await queryResultSetIterator.ReadNextAsync();
                 foreach (BankUser user in currentResultSet)
                 {
                     users.Add(user);
@@ -304,7 +305,7 @@ namespace DataAccess
         /// </summary>
         /// <param name="firstName">User's first name</param>
         /// <returns>A list of all <see cref="BankUser"/>s that have the given girst name</returns>
-        public Result<List<BankUser>> GetAllByFirstName(string firstName)
+        public async Task<Result<List<BankUser>>> GetAllByFirstNameAsync(string firstName)
         {
             // Building the sql query
             string sqlQueryText = $"SELECT * FROM c WHERE c.FirstName = \"{firstName}\"";
@@ -317,7 +318,7 @@ namespace DataAccess
             List<BankUser> users = new List<BankUser>();
             while (queryResultSetIterator.HasMoreResults)
             {
-                FeedResponse<BankUser> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+                FeedResponse<BankUser> currentResultSet = await queryResultSetIterator.ReadNextAsync();
                 foreach (BankUser user in currentResultSet)
                 {
                     users.Add(user);
@@ -347,7 +348,7 @@ namespace DataAccess
         /// </summary>
         /// <param name="lastName">User's last name</param>
         /// <returns>A list of all <see cref="BankUser"/>s that have the given last name</returns>
-        public Result<List<BankUser>> GetAllByLastName(string lastName)
+        public async Task<Result<List<BankUser>>> GetAllByLastNameAsync(string lastName)
         {
             // Building the sql query
             string sqlQueryText = $"SELECT * FROM c WHERE c.LastName = \"{lastName}\"";
@@ -360,7 +361,7 @@ namespace DataAccess
             List<BankUser> users = new List<BankUser>();
             while (queryResultSetIterator.HasMoreResults)
             {
-                FeedResponse<BankUser> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+                FeedResponse<BankUser> currentResultSet = await queryResultSetIterator.ReadNextAsync();
                 foreach (BankUser user in currentResultSet)
                 {
                     users.Add(user);
@@ -391,7 +392,7 @@ namespace DataAccess
         /// <param name="firstName">User's first name</param>
         /// <param name="lastName">User's last name</param>
         /// <returns>A list of all <see cref="BankUser"/>s that have the given first name and last name</returns>
-        public Result<List<BankUser>> GetAllByName(string firstName, string lastName)
+        public async Task<Result<List<BankUser>>> GetAllByNameAsync(string firstName, string lastName)
         {
             // Building the sql query
             string sqlQueryText = $"SELECT * FROM c WHERE c.FirstName = \"{firstName}\" AND c.LastName = \"{lastName}\"";
@@ -404,7 +405,7 @@ namespace DataAccess
             List<BankUser> users = new List<BankUser>();
             while (queryResultSetIterator.HasMoreResults)
             {
-                FeedResponse<BankUser> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+                FeedResponse<BankUser> currentResultSet = await queryResultSetIterator.ReadNextAsync();
                 foreach (BankUser user in currentResultSet)
                 {
                     users.Add(user);
@@ -434,7 +435,7 @@ namespace DataAccess
         /// </summary>
         /// <param name="userName">Unique user identifier</param>
         /// <returns>The <see cref="BankUser"/> with the given user name, or null if no user exists with that user name</returns>
-        public Result<BankUser> GetByUserName(string userName)
+        public async Task<Result<BankUser>> GetByUserNameAsync(string userName)
         {
             // Building the sql query
             string sqlQueryText = $"SELECT * FROM c WHERE c.UserName = \"{userName}\"";
@@ -444,7 +445,7 @@ namespace DataAccess
             FeedIterator<BankUser> queryResultSetIterator = _container.GetItemQueryIterator<BankUser>(queryDefinition);
 
             // Getting the results from the query
-            FeedResponse<BankUser> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+            FeedResponse<BankUser> currentResultSet = await queryResultSetIterator.ReadNextAsync();
             IEnumerable<BankUser> users = currentResultSet.Resource;
 
             // Check if the operation returned any accounts
@@ -471,7 +472,7 @@ namespace DataAccess
         /// </summary>
         /// <param name="id">Unique user identifier</param>
         /// <returns>The <see cref="BankUser"/> with the given id, or null if no user exists with that id</returns>
-        public Result<BankUser> GetById(string id)
+        public async Task<Result<BankUser>> GetByIdAsync(string id)
         {
             // Building the sql query
             string sqlQueryText = $"SELECT * FROM c WHERE c.Id = \"{id}\"";
@@ -481,7 +482,7 @@ namespace DataAccess
             FeedIterator<BankUser> queryResultSetIterator = _container.GetItemQueryIterator<BankUser>(queryDefinition);
 
             // Getting the results from the query
-            FeedResponse<BankUser> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+            FeedResponse<BankUser> currentResultSet = await queryResultSetIterator.ReadNextAsync();
             IEnumerable<BankUser> users = currentResultSet.Resource;
 
             // Check if the operation returned any accounts
