@@ -5,6 +5,7 @@ namespace DataAccess
     using Models;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Defines the interface for interacting with the account data store.
@@ -35,7 +36,7 @@ namespace DataAccess
         /// Creates a new account data entity
         /// </summary>
         /// <param name="account">The account to be created</param>
-        public Result<Account> CreateAccount(Account account)
+        public async Task<Result<Account>> CreateAccountAsync(Account account)
         {
             if (account == null)
             {
@@ -47,7 +48,7 @@ namespace DataAccess
             }
 
             // Create and item. Partition key value and id must be provided in order to create
-            ItemResponse<Account> itemResponse = _container.CreateItemAsync<Account>(account, new PartitionKey(account.Id)).Result;
+            ItemResponse<Account> itemResponse = await _container.CreateItemAsync<Account>(account, new PartitionKey(account.Id));
 
             // Check if the cosmos operation was successful or not. Create returns 204 No Content when successful
             if (itemResponse.StatusCode == System.Net.HttpStatusCode.Created)
@@ -83,7 +84,7 @@ namespace DataAccess
         /// Deletes the specified account data entity
         /// </summary>
         /// <param name="deletedAccount">The account to be deleted</param>
-        public Result<Account> DeleteAccount(Account deletedAccount)
+        public async Task<Result<Account>> DeleteAccountAsync(Account deletedAccount)
         {
             if(deletedAccount == null)
             {
@@ -95,7 +96,7 @@ namespace DataAccess
             }
 
             // Delete an item. Partition key value and id must be provided in order to delete
-            ItemResponse<Account> itemResponse = _container.DeleteItemAsync<Account>(deletedAccount.Id, new PartitionKey(deletedAccount.UserName)).Result;
+            ItemResponse<Account> itemResponse = await _container.DeleteItemAsync<Account>(deletedAccount.Id, new PartitionKey(deletedAccount.UserName));
 
             // Check if the cosmos operation was successful or not. Delete returns 204 No Content when successful
             if(itemResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -128,7 +129,7 @@ namespace DataAccess
         /// Updates the specified account data entity
         /// </summary>
         /// <param name="updatedAccount">The account to be updated</param>
-        public Result<Account> UpdateAccount(Account updatedAccount)
+        public async Task<Result<Account>> UpdateAccountAsync(Account updatedAccount)
         {
             if (updatedAccount == null)
             {
@@ -140,7 +141,7 @@ namespace DataAccess
             }
 
             // Update an item. Partition key value and id must be provided in order to update
-            ItemResponse<Account> itemResponse = _container.ReplaceItemAsync<Account>(updatedAccount, id:updatedAccount.Id, partitionKey: new PartitionKey(updatedAccount.UserName)).Result;
+            ItemResponse<Account> itemResponse = await _container.ReplaceItemAsync<Account>(updatedAccount, id:updatedAccount.Id, partitionKey: new PartitionKey(updatedAccount.UserName));
 
             // Check if the cosmos operation was successful or not.
             // Create returns 409 Conflict when the id already exists
@@ -165,7 +166,7 @@ namespace DataAccess
         /// Gets a list of all accounts in the system
         /// </summary>
         /// <returns>A list of all <see cref="Account"/>s in the system</returns>
-        public Result<List<Account>> GetAllAccounts()
+        public async Task<Result<List<Account>>> GetAllAccountsAsync()
         {
             // Building the sql query
             string sqlQueryText = "SELECT * FROM accounts";
@@ -178,7 +179,7 @@ namespace DataAccess
             List<Account> accounts = new List<Account>();
             while (queryResultSetIterator.HasMoreResults)
             {
-                FeedResponse<Account> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+                FeedResponse<Account> currentResultSet = await queryResultSetIterator.ReadNextAsync();
                 foreach (Account account in currentResultSet)
                 {
                     accounts.Add(account);
@@ -208,7 +209,7 @@ namespace DataAccess
         /// </summary>
         /// <param name="userName">Unique identifier of the user we want to retrieve accounts for</param>
         /// <returns>A list of all <see cref="Account"/>s that belong to the user</returns>
-        public Result<List<Account>> GetAllByUsername(string userName)
+        public async Task<Result<List<Account>>> GetAllByUsernameAsync(string userName)
         {
             // Building the sql query
             string sqlQueryText = $"SELECT * FROM c WHERE c.UserName = \"{userName}\"";
@@ -221,7 +222,7 @@ namespace DataAccess
             List<Account> accounts = new List<Account>();
             while (queryResultSetIterator.HasMoreResults)
             {
-                FeedResponse<Account> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+                FeedResponse<Account> currentResultSet =  await queryResultSetIterator.ReadNextAsync();
                 foreach (Account account in currentResultSet)
                 {
                     accounts.Add(account);
@@ -251,7 +252,7 @@ namespace DataAccess
         /// </summary>
         /// <param name="accountNumber">Unique account identifier</param>
         /// <returns>The <see cref="Account"/> with the given account number, or null if no account exists with that number</returns>
-        public Result<Account> GetByAccountNumber(int accountNumber)
+        public async Task<Result<Account>> GetByAccountNumberAsync(int accountNumber)
         {
             // Building the sql query
             string sqlQueryText = $"SELECT * FROM c WHERE c.Number = {accountNumber}";
@@ -261,7 +262,7 @@ namespace DataAccess
             FeedIterator<Account> queryResultSetIterator = _container.GetItemQueryIterator<Account>(queryDefinition);
 
             // Getting the results from the query
-            FeedResponse<Account> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+            FeedResponse<Account> currentResultSet = await queryResultSetIterator.ReadNextAsync();
             // query stops working here
             IEnumerable<Account> accounts = currentResultSet.Resource;
 
@@ -289,7 +290,7 @@ namespace DataAccess
         /// </summary>
         /// <param name="id">Unique account identifier</param>
         /// <returns>The <see cref="Account"/> with the given id, or null if no account exists with that id</returns>
-        public Result<Account> GetById(string id)
+        public async Task<Result<Account>> GetByIdAsync(string id)
         {
             // Building the sql query
             string sqlQueryText = $"SELECT * FROM c WHERE c.Id = \"{id}\"";
@@ -299,7 +300,7 @@ namespace DataAccess
             FeedIterator<Account> queryResultSetIterator = _container.GetItemQueryIterator<Account>(queryDefinition);
 
             // Getting the results from the query
-            FeedResponse<Account> currentResultSet = queryResultSetIterator.ReadNextAsync().Result;
+            FeedResponse<Account> currentResultSet = await queryResultSetIterator.ReadNextAsync();
             IEnumerable<Account> accounts = currentResultSet.Resource;
 
             // Check if the operation returned any accounts
