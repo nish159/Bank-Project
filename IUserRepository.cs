@@ -3,6 +3,7 @@ namespace DataAccess
     using System.Collections.Generic;
     using Models;
     using Bank;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Defines the interface for interacting with the account data store.
@@ -13,75 +14,75 @@ namespace DataAccess
         /// Creates a new user data entity
         /// </summary>
         /// <param name="user">The user to be created</param>
-        Result<User> CreateUser(User user);
+        Task<Result<BankUser>> CreateUserAsync(BankUser user);
 
         /// <summary>
         /// Updates the specified user data entity
         /// </summary>
         /// <param name="updatedUser">The user to be updated</param>
-        Result<User> UpdateUser(User updatedUser);
+        Task<Result<BankUser>> UpdateUserAsync(BankUser updatedUser);
 
         /// <summary>
         /// Updates the specified user data entity
         /// </summary>
         /// <param name="oldUserName">The user's user name before the update</param>
         /// <param name="updatedUser">The user to be updated</param>
-        Result<User> UpdateUser(string oldUserName, User updatedUser);
+        Task<Result<BankUser>> UpdateUserAsync(string oldUserName, BankUser updatedUser);
 
         /// <summary>
         /// Deletes the specified user data entity
         /// </summary>
         /// <param name="deleteUser">The user to be deleted</param>
-        Result<User> DeleteUser(User deleteUser);
+        Task<Result<BankUser>> DeleteUserAsync(BankUser deleteUser);
 
         /// <summary>
         /// Gets a list of all users in the system
         /// </summary>
-        /// <returns>A list of all <see cref="User"/>s in the system</returns>
-        Result<List<User>> GetAllUsers();
+        /// <returns>A list of all <see cref="BankUser"/>s in the system</returns>
+        Task<Result<List<BankUser>>> GetAllUsersAsync();
 
         /// <summary>
         /// Gets a list of all users that have the given user name
         /// </summary>
         /// <param name="userName">Unique user identifier</param>
-        /// <returns>A list of all <see cref="User"/>s that have the given user name</returns>
-        Result<List<User>> GetAllByUserName(string userName);
+        /// <returns>A list of all <see cref="BankUser"/>s that have the given user name</returns>
+        Task<Result<List<BankUser>>> GetAllByUserNameAsync(string userName);
 
         /// <summary>
         /// Gets a list of all users that have the given first name
         /// </summary>
         /// <param name="firstName">User's first name</param>
-        /// <returns>A list of all <see cref="User"/>s that have the given girst name</returns>
-        Result<List<User>> GetAllByFirstName(string firstName);
+        /// <returns>A list of all <see cref="BankUser"/>s that have the given girst name</returns>
+        Task<Result<List<BankUser>>> GetAllByFirstNameAsync(string firstName);
 
         /// <summary>
         /// Gets a list of all users that have the given last name
         /// </summary>
         /// <param name="lastName">User's last name</param>
-        /// <returns>A list of all <see cref="User"/>s that have the given last name</returns>
-        Result<List<User>> GetAllByLastName(string lastName);
+        /// <returns>A list of all <see cref="BankUser"/>s that have the given last name</returns>
+        Task<Result<List<BankUser>>> GetAllByLastNameAsync(string lastName);
 
         /// <summary>
         /// Gets a list of all users that have the given first name and last name
         /// </summary>
         /// <param name="firstName">User's first name</param>
         /// <param name="lastName">User's last name</param>
-        /// <returns>A list of all <see cref="User"/>s that have the given first name and last name</returns>
-        Result<List<User>> GetAllByName(string firstName, string lastName);
+        /// <returns>A list of all <see cref="BankUser"/>s that have the given first name and last name</returns>
+        Task<Result<List<BankUser>>> GetAllByNameAsync(string firstName, string lastName);
 
         /// <summary>
         /// Gets the user with the given user name
         /// </summary>
         /// <param name="userName">Unique user identifier</param>
-        /// <returns>The <see cref="User"/> with the given user name, or null if no user exists with that user name</returns>
-        Result<User> GetByUserName(string userName);
+        /// <returns>The <see cref="BankUser"/> with the given user name, or null if no user exists with that user name</returns>
+        Task<Result<BankUser>> GetByUserNameAsync(string userName);
 
         /// <summary>
         /// Gets the user with the given user id
         /// </summary>
         /// <param name="id">Unique user identifier</param>
-        /// <returns>The <see cref="User"/> with the given id, or null if no user exists with that id</returns>
-        Result<User> GetById(string id);
+        /// <returns>The <see cref="BankUser"/> with the given id, or null if no user exists with that id</returns>
+        Task<Result<BankUser>> GetByIdAsync(string id);
     }
 }
 
