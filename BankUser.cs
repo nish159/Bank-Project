@@ -6,7 +6,7 @@ namespace Models
     /// Defines a User object - the top-level representation of a user
     /// in the system.
     /// </summary>
-    public class User
+    public class BankUser
     {
         /// <summary>
         /// Unique document identifier.
