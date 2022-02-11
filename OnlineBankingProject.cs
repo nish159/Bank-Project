@@ -8,12 +8,21 @@ namespace OnlineBankingProject
     using global::Bank;
     using System.Security.Cryptography;
     using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+    using Microsoft.Extensions.DependencyInjection;
 
     class Bank
     {
+        private static IUserRepository _userRepository;
+        private static IAccountRepository _accountRepository;
+        private static IAccountLogic _accountLogic;
+
         static void Main(string[] args)
         {
-            IUserRepository dataAccessor = new UserFileSystemRepository();
+            IServiceProvider serviceProvider = ConfigureSerivces();
+
+            _userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+            _accountRepository = serviceProvider.GetRequiredService<IAccountRepository>();
+            _accountLogic = serviceProvider.GetRequiredService<IAccountLogic>();
 
             string userName;
             string password = "";
@@ -22,7 +31,7 @@ namespace OnlineBankingProject
             Console.WriteLine("Please enter your username: ");
             userName = Console.ReadLine();
 
-            Result<User> user = dataAccessor.GetByUserName(userName);
+            Result<BankUser> user = _userRepository.GetByUserName(userName);
 
             if (user.Succeeded == false)
             {
@@ -65,10 +74,10 @@ namespace OnlineBankingProject
             }
         }
 
-        static private void PrintUsers(List<User> users)
+        static private void PrintUsers(List<BankUser> users)
         {
             Console.WriteLine($"Number of users: {users.Count}");
-            foreach (User user in users)
+            foreach (BankUser user in users)
             {
                 Console.WriteLine($"Id: {user.Id} UserName: {user.UserName}, FirstName: {user.FirstName}, LastName: {user.LastName}");
             }
@@ -138,8 +147,6 @@ namespace OnlineBankingProject
 
         static void balance()
         {
-            IAccountRepository accountRepository = new AccountFileSystemRepository();
-
             int accountNumber;
 
             // Ask for the account number 
@@ -147,7 +154,7 @@ namespace OnlineBankingProject
             accountNumber = int.Parse(Console.ReadLine());
 
             // Verify the account number
-            Result<Account> account = accountRepository.GetByAccountNumber(accountNumber);
+            Result<Account> account = _accountRepository.GetByAccountNumber(accountNumber);
 
             if (account == null)
             {
@@ -161,10 +168,7 @@ namespace OnlineBankingProject
 
         static void deposit()
         {
-            IAccountRepository accountRepository = new AccountFileSystemRepository();
-            IUserRepository userRepository = new UserFileSystemRepository();
-            IAccountLogic logic = new AccountLogic(accountRepository, userRepository);
-
+      
             int accountNumber;
             string firstName;
             string lastName;
@@ -187,16 +191,12 @@ namespace OnlineBankingProject
             depositAmount = decimal.Parse(Console.ReadLine());
 
             // Call deposit function
-            logic.DepositAmount(firstName, lastName, accountNumber, depositAmount);
+            _accountLogic.DepositAmount(firstName, lastName, accountNumber, depositAmount);
             return;
         }
 
         static void withdraw()
         {
-            IAccountRepository accountRepository = new AccountFileSystemRepository();
-            IUserRepository userRepository = new UserFileSystemRepository();
-            IAccountLogic logic = new AccountLogic(accountRepository, userRepository);
-
             int accountNumber;
             decimal withdrawAmount;
             string pin = "";
@@ -251,16 +251,12 @@ namespace OnlineBankingProject
                     return;
             }
 
-            logic.WithdrawAmount(accountNumber, pin, withdrawAmount);
+            _accountLogic.WithdrawAmount(accountNumber, pin, withdrawAmount);
             return;
         }
 
         static void transfer()
         {
-            IAccountRepository accountRepository = new AccountFileSystemRepository();
-            IUserRepository userRepository = new UserFileSystemRepository();
-            IAccountLogic logic = new AccountLogic(accountRepository, userRepository);
-
             int sourceAccount;
             int destinationAccount;
             decimal transferAmount;
@@ -286,15 +282,13 @@ namespace OnlineBankingProject
             Console.WriteLine("\nPlease enter the last name of the account holder: ");
             lastName = Console.ReadLine();
 
-            logic.TransferAmount(sourceAccount, pin, destinationAccount, firstName, lastName, transferAmount);
+            _accountLogic.TransferAmount(sourceAccount, pin, destinationAccount, firstName, lastName, transferAmount);
             return;
         }
 
         static void viewAccounts(string userName)
         {
-            IAccountRepository accountRepository = new AccountFileSystemRepository();
-
-            Result<List<Account>> accounts = accountRepository.GetAllByUsername(userName);
+            Result<List<Account>> accounts = _accountRepository.GetAllByUsernameAsync(userName).Result;
 
             PrintAccounts(accounts.Value);   
         }
@@ -303,6 +297,24 @@ namespace OnlineBankingProject
         {
             Console.WriteLine("Thank you for using CyberBank. GoodBye.");
             return;
+        }
+
+        /// <summary>
+        /// Configure the dependency injection 
+        /// </summary>
+        /// <returns></returns>
+        private static IServiceProvider ConfigureSerivces()
+        {
+            IServiceCollection services = new ServiceCollection();
+
+            // Define implementations of interfaces
+            services.AddSingleton<IAccountRepository, AccountsCosmosDbRepository>();
+            services.AddSingleton<IUserRepository, UsersCosmosDbRepository>();
+            services.AddSingleton<IAccountLogic, AccountLogic>();
+
+            // Build the service provider
+            IServiceProvider serviceProvider = services.BuildServiceProvider();
+            return serviceProvider;
         }
     }
 }
