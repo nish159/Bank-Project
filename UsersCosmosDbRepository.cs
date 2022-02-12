@@ -112,7 +112,7 @@ namespace DataAccess
             }
 
             // Update an item. Partition key value and id must be provided in order to update
-            ItemResponse<BankUser> itemResponse = await _container.ReplaceItemAsync<BankUser>(updatedUser, id: updatedUser.Id, partitionKey: new PartitionKey(updatedUser.UserName));
+            ItemResponse<BankUser> itemResponse = _container.ReplaceItemAsync<BankUser>(updatedUser, id: updatedUser.Id, partitionKey: new PartitionKey(updatedUser.UserName)).Result;
 
             // Check if the cosmos operation was successful or not.
             // Create returns 409 Conflict when the id already exists
