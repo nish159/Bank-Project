@@ -31,7 +31,7 @@ namespace OnlineBankingProject
             Console.WriteLine("Please enter your username: ");
             userName = Console.ReadLine();
 
-            Result<BankUser> user = _userRepository.GetByUserName(userName);
+            Result<BankUser> user = _userRepository.GetByUserNameAsync(userName);
 
             if (user.Succeeded == false)
             {
@@ -154,7 +154,7 @@ namespace OnlineBankingProject
             accountNumber = int.Parse(Console.ReadLine());
 
             // Verify the account number
-            Result<Account> account = _accountRepository.GetByAccountNumber(accountNumber);
+            Result<Account> account = _accountRepository.GetByAccountNumberAsync(accountNumber).re;
 
             if (account == null)
             {
