@@ -56,7 +56,7 @@ namespace DataAccess
         public async Task<Result<BankUser>> UpdateUserAsync(BankUser updatedUser)
         {
             // Check if the account we want to update exists
-            Result<BankUser> getAllUserNamesResult =  await GetByIdAsync(updatedUser.Id);
+            Result<BankUser> getAllUserNamesResult = await GetByIdAsync(updatedUser.Id);
             if (getAllUserNamesResult.Succeeded == false)
             {
                 return getAllUserNamesResult;
@@ -73,7 +73,7 @@ namespace DataAccess
                 };
             }
 
-            Result<BankUser> getByUserNameResult = await GetByUserNameAsync (updatedUser.UserName);
+            Result<BankUser> getByUserNameResult = await GetByUserNameAsync(updatedUser.UserName);
             if (getByUserNameResult.Succeeded == true /*There is a user with the matching user name*/ &&
                 // getByUserNameResult.Value is the existing user with the given user name
                 getByUserNameResult.Value.Id != existingUser.Value.Id /* The user with the mathing user name has a different id*/)
