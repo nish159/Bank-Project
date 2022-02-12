@@ -125,7 +125,7 @@ namespace Logic
         public async Task<Result<decimal>> TransferAmount(int sourceAccountNumber, string sourcePin, int destAccountNumber, string destFirstName, string destLastName, decimal amount)
         {
             // Validate the destination account information
-            if (Validate(destFirstName, destLastName, destAccountNumber) == false)
+            if (await Validate(destFirstName, destLastName, destAccountNumber) == false)
             {
                 return new Result<decimal>()
                 {
