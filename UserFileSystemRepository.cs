@@ -7,6 +7,7 @@ namespace DataAccess
     using System.Linq;
     using System.Text.Json;
     using Bank;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Implements the <see cref="IUserRepository"/> interface for
@@ -18,15 +19,15 @@ namespace DataAccess
         /// Creates a new user data entity
         /// </summary>
         /// <param name="user">The user to be created</param>
-        public Result<User> CreateUser(User user)
+        public async Task<Result<BankUser>> CreateUserAsync(BankUser user)
         {
-            Result<List<User>> getAllUsersResult = GetAllUsers();
-            List<User> users = getAllUsersResult.Value;
+            Result<List<BankUser>> getAllUsersResult = await GetAllUsersAsync();
+            List<BankUser> users = getAllUsersResult.Value;
             // Checking if there is any account that has the same account number
             // as the account we want to create
             if (users.Any(i => i.UserName == user.UserName))
             {
-                return new Result<User>()
+                return new Result<BankUser>()
                 {
                     Succeeded = false,
                     Message = $"Unable to create username. Username {user.UserName} already exists",
@@ -41,7 +42,7 @@ namespace DataAccess
                 writer.Write(usersJson);
             }
 
-            return new Result<User>()
+            return new Result<BankUser>()
             {
                 Succeeded = true,
                 Value = user
@@ -52,19 +53,19 @@ namespace DataAccess
         /// Updates the specified user data entity
         /// </summary>
         /// <param name="updatedUser">The user to be updated</param>
-        public Result<User> UpdateUser(User updatedUser)
+        public async Task<Result<BankUser>> UpdateUserAsync(BankUser updatedUser)
         {
             // Check if the account we want to update exists
-            Result<User> getAllUserNamesResult = GetById(updatedUser.Id);
+            Result<BankUser> getAllUserNamesResult =  await GetByIdAsync(updatedUser.Id);
             if (getAllUserNamesResult.Succeeded == false)
             {
                 return getAllUserNamesResult;
             }
 
-            Result<User> existingUser = GetById(updatedUser.Id);
+            Result<BankUser> existingUser = await GetByIdAsync(updatedUser.Id);
             if (existingUser.Succeeded == false)
             {
-                return new Result<User>()
+                return new Result<BankUser>()
                 {
                     Succeeded = false,
                     Message = $"Unable to update user. No user found with ID {updatedUser.Id} exists",
@@ -72,12 +73,12 @@ namespace DataAccess
                 };
             }
 
-            Result<User> getByUserNameResult = GetByUserName(updatedUser.UserName);
+            Result<BankUser> getByUserNameResult = await GetByUserNameAsync (updatedUser.UserName);
             if (getByUserNameResult.Succeeded == true /*There is a user with the matching user name*/ &&
                 // getByUserNameResult.Value is the existing user with the given user name
                 getByUserNameResult.Value.Id != existingUser.Value.Id /* The user with the mathing user name has a different id*/)
             {
-                return new Result<User>()
+                return new Result<BankUser>()
                 {
                     Succeeded = false,
                     Message = $"Unable to upate user. Duplicate user name",
@@ -86,9 +87,9 @@ namespace DataAccess
             }
 
             // We have verified that the user exists - update the user
-            Result<List<User>> getAllUsersResult = GetAllUsers();
-            List<User> users = getAllUsersResult.Value;
-            foreach (User user in users)
+            Result<List<BankUser>> getAllUsersResult = await GetAllUsersAsync();
+            List<BankUser> users = getAllUsersResult.Value;
+            foreach (BankUser user in users)
             {
                 if (user.Id == updatedUser.Id)
                 {
@@ -104,7 +105,7 @@ namespace DataAccess
             }
             
             // Operation was successful
-            return new Result<User>()
+            return new Result<BankUser>()
             {
                 Succeeded = true,
                 Value = updatedUser
@@ -116,13 +117,13 @@ namespace DataAccess
         /// </summary>
         /// <param name="oldUserName">The user's user name before the update</param>
         /// <param name="updatedUser">The user to be updated</param>
-        public Result<User> UpdateUser(string oldUserName, User updatedUser)
+        public async Task<Result<BankUser>> UpdateUserAsync(string oldUserName, BankUser updatedUser)
         {
             // Check if the account we want to update exists
-            Result<User> existingUserName = GetByUserName(oldUserName);
+            Result<BankUser> existingUserName = await GetByUserNameAsync(oldUserName);
             if (existingUserName.Succeeded == false)
             {
-                return new Result<User>()
+                return new Result<BankUser>()
                 {
                     Succeeded = false,
                     Message = $"Unable to update user. No user with that username {oldUserName} exists",
@@ -131,9 +132,9 @@ namespace DataAccess
             }
 
             // We have verified that the user exists - update the user
-            Result<List<User>> getAllUsersResult = GetAllUsers();
-            List<User> users = getAllUsersResult.Value;
-            foreach (User user in users)
+            Result<List<BankUser>> getAllUsersResult = await GetAllUsersAsync();
+            List<BankUser> users = getAllUsersResult.Value;
+            foreach (BankUser user in users)
             {
                 if (user.UserName == oldUserName)
                 {
@@ -150,7 +151,7 @@ namespace DataAccess
             }
 
             // Operation was successful
-            return new Result<User>()
+            return new Result<BankUser>()
             {
                 Succeeded = true,
                 Value = updatedUser
@@ -161,10 +162,10 @@ namespace DataAccess
         /// Deletes the specified user data entity
         /// </summary>
         /// <param name="deletedUser">The user to be deleted</param>
-        public Result<User> DeleteUser(User deletedUser)
+        public async Task<Result<BankUser>> DeleteUserAsync(BankUser deletedUser)
         {
-            Result<List<User>> getAllUsersResult = GetAllUsers();
-            List<User> allUsers = getAllUsersResult.Value;
+            Result<List<BankUser>> getAllUsersResult = await GetAllUsersAsync();
+            List<BankUser> allUsers = getAllUsersResult.Value;
 
             //allUsers.Remove(deletedUser);
             allUsers = allUsers.Where(i => i.UserName != deletedUser.UserName).ToList();
@@ -176,7 +177,7 @@ namespace DataAccess
 
             Console.WriteLine($"User {deletedUser.UserName} has been deleted");
             // Operation was successful
-            return new Result<User>()
+            return new Result<BankUser>()
             {
                 Succeeded = true,
                 Value = deletedUser
@@ -186,16 +187,16 @@ namespace DataAccess
         /// <summary>
         /// Gets a list of all users in the system
         /// </summary>
-        /// <returns>A list of all <see cref="User"/>s in the system</returns>
-        public Result<List<User>> GetAllUsers()
+        /// <returns>A list of all <see cref="BankUser"/>s in the system</returns>
+        public async Task<Result<List<BankUser>>> GetAllUsersAsync()
         {
-            List<User> users = new List<User>();
+            List<BankUser> users = new List<BankUser>();
             using (StreamReader reader = new StreamReader("../../../users.json"))
             {
-                string usersJson = reader.ReadToEnd();
-                users = JsonSerializer.Deserialize<List<User>>(usersJson);
+                string usersJson = await reader.ReadToEndAsync();
+                users = JsonSerializer.Deserialize<List<BankUser>>(usersJson);
             }
-            Result<List<User>> result = new Result<List<User>>()
+            Result<List<BankUser>> result = new Result<List<BankUser>>()
             {
                 Succeeded = true,
                 Value = users
@@ -207,16 +208,16 @@ namespace DataAccess
         /// Gets a list of all users that have the given user name
         /// </summary>
         /// <param name="userName">Unique user identifier</param>
-        /// <returns>A list of all <see cref="User"/>s that have the given user name</returns>
-        public Result<List<User>> GetAllByUserName(string userName)
+        /// <returns>A list of all <see cref="BankUser"/>s that have the given user name</returns>
+        public async Task<Result<List<BankUser>>> GetAllByUserNameAsync(string userName)
         {
             // Get all accounts in the system (json file)
-            Result<List<User>> getAllUsersResult = GetAllUsers();
-            List<User> users = getAllUsersResult.Value;
+            Result<List<BankUser>> getAllUsersResult = await GetAllUsersAsync();
+            List<BankUser> users = getAllUsersResult.Value;
 
             // Filter the list to only have accounts for the given user name
-            List<User> allUsers = users.Where(i => i.UserName == userName).ToList();
-            Result<List<User>> result = new Result<List<User>>()
+            List<BankUser> allUsers = users.Where(i => i.UserName == userName).ToList();
+            Result<List<BankUser>> result = new Result<List<BankUser>>()
             {
                 Succeeded = true,
                 Value = allUsers
@@ -228,16 +229,16 @@ namespace DataAccess
         /// Gets a list of all users that have the given first name
         /// </summary>
         /// <param name="firstName">User's first name</param>
-        /// <returns>A list of all <see cref="User"/>s that have the given girst name</returns>
-        public Result<List<User>> GetAllByFirstName(string firstName)
+        /// <returns>A list of all <see cref="BankUser"/>s that have the given girst name</returns>
+        public async Task<Result<List<BankUser>>> GetAllByFirstNameAsync(string firstName)
         {
             // Get all accounts in the system (json file)
-            Result<List<User>> getAllUsersResult = GetAllUsers();
-            List<User> users = getAllUsersResult.Value;
+            Result<List<BankUser>> getAllUsersResult = await GetAllUsersAsync();
+            List<BankUser> users = getAllUsersResult.Value;
 
             // Filter the list to only have accounts for the given first name
-            List<User> allFirst = users.Where(i => i.FirstName == firstName).ToList();
-            Result<List<User>> result = new Result<List<User>>()
+            List<BankUser> allFirst = users.Where(i => i.FirstName == firstName).ToList();
+            Result<List<BankUser>> result = new Result<List<BankUser>>()
             {
                 Succeeded = true,
                 Value = allFirst
@@ -249,16 +250,16 @@ namespace DataAccess
         /// Gets a list of all users that have the given last name
         /// </summary>
         /// <param name="lastName">User's last name</param>
-        /// <returns>A list of all <see cref="User"/>s that have the given last name</returns>
-        public Result<List<User>> GetAllByLastName(string lastName)
+        /// <returns>A list of all <see cref="BankUser"/>s that have the given last name</returns>
+        public async Task<Result<List<BankUser>>> GetAllByLastNameAsync(string lastName)
         {
             // Get all accounts in the system (json file)
-            Result<List<User>> getAllUsersResult = GetAllUsers();
-            List<User> users = getAllUsersResult.Value;
+            Result<List<BankUser>> getAllUsersResult = await GetAllUsersAsync();
+            List<BankUser> users = getAllUsersResult.Value;
 
             // Filter the list to only have accounts for the given last name
-            List<User> allLast = users.Where(i => i.LastName == lastName).ToList();
-            Result<List<User>> result = new Result<List<User>>()
+            List<BankUser> allLast = users.Where(i => i.LastName == lastName).ToList();
+            Result<List<BankUser>> result = new Result<List<BankUser>>()
             {
                 Succeeded = true,
                 Value = allLast
@@ -271,16 +272,16 @@ namespace DataAccess
         /// </summary>
         /// <param name="firstName">User's first name</param>
         /// <param name="lastName">User's last name</param>
-        /// <returns>A list of all <see cref="User"/>s that have the given first name and last name</returns>
-        public Result<List<User>> GetAllByName(string firstName, string lastName)
+        /// <returns>A list of all <see cref="BankUser"/>s that have the given first name and last name</returns>
+        public async Task<Result<List<BankUser>>> GetAllByNameAsync(string firstName, string lastName)
         {
             // Get all accounts in the system (json file)
-            Result<List<User>> getAllUsersResult = GetAllUsers();
-            List<User> users = getAllUsersResult.Value;
+            Result<List<BankUser>> getAllUsersResult = await GetAllUsersAsync();
+            List<BankUser> users = getAllUsersResult.Value;
 
             // Filter the list to only have accounts for the given all names
-            List<User> allUsers = users.Where(i => i.FirstName == firstName && i.LastName == lastName).ToList();
-            Result<List<User>> result = new Result<List<User>>()
+            List<BankUser> allUsers = users.Where(i => i.FirstName == firstName && i.LastName == lastName).ToList();
+            Result<List<BankUser>> result = new Result<List<BankUser>>()
             {
                 Succeeded = true,
                 Value = allUsers
@@ -292,16 +293,16 @@ namespace DataAccess
         /// Gets the user with the given user name
         /// </summary>
         /// <param name="userName">Unique user identifier</param>
-        /// <returns>The <see cref="User"/> with the given user name, or null if no user exists with that user name</returns>
-        public Result<User> GetByUserName(string userName)
+        /// <returns>The <see cref="BankUser"/> with the given user name, or null if no user exists with that user name</returns>
+        public async Task<Result<BankUser>> GetByUserNameAsync(string userName)
         {
             // Get all accounts in the system (json file)
-            Result<List<User>> getAllUsersResult = GetAllUsers();
-            List<User> users = getAllUsersResult.Value;
+            Result<List<BankUser>> getAllUsersResult = await GetAllUsersAsync();
+            List<BankUser> users = getAllUsersResult.Value;
 
             // user will either be the user with the matching username, or null if there is no account with that username
-            User user = users.Where(i => i.UserName == userName).FirstOrDefault();
-            return new Result<User>
+            BankUser user = users.Where(i => i.UserName == userName).FirstOrDefault();
+            return new Result<BankUser>
             {
                 Succeeded = true,
                 Value = user
@@ -312,14 +313,14 @@ namespace DataAccess
         /// Gets the user with the given user id
         /// </summary>
         /// <param name="id">Unique user identifier</param>
-        /// <returns>The <see cref="User"/> with the given id, or null if no user exists with that id</returns>
-        public Result<User> GetById(string id)
+        /// <returns>The <see cref="BankUser"/> with the given id, or null if no user exists with that id</returns>
+        public async Task<Result<BankUser>> GetByIdAsync(string id)
         {
-            Result<List<User>> getAllUsersResult = GetAllUsers();
-            List<User> users = getAllUsersResult.Value;
+            Result<List<BankUser>> getAllUsersResult = await GetAllUsersAsync();
+            List<BankUser> users = getAllUsersResult.Value;
 
-            User user = users.Where(i => i.Id == id).FirstOrDefault();
-            return new Result<User>
+            BankUser user = users.Where(i => i.Id == id).FirstOrDefault();
+            return new Result<BankUser>
             {
                 Succeeded = true,
                 Value = user
