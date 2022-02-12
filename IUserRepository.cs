@@ -82,6 +82,6 @@ namespace DataAccess
         /// </summary>
         /// <param name="id">Unique user identifier</param>
         /// <returns>The <see cref="BankUser"/> with the given id, or null if no user exists with that id</returns>
-        Task<Result<BankUser>> GetById(string id);
+        Task<Result<BankUser>> GetByIdAsync(string id);
     }
 }
