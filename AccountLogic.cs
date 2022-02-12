@@ -4,6 +4,7 @@ namespace Logic
     using DataAccess;
     using Models;
     using System;
+    using System.Threading.Tasks;
     public class AccountLogic : IAccountLogic
     {
         IAccountRepository _accountRepository;
@@ -15,10 +16,10 @@ namespace Logic
             _userRepository = userRepository;
         }
 
-        public Result<decimal> DepositAmount(int accountNumber, decimal amount)
+        public async Task<Result<decimal>> DepositAmount(int accountNumber, decimal amount)
         {
             // Get the account
-            Result<Account> getByAccountNumberResult = _accountRepository.GetByAccountNumber(accountNumber);
+            Result<Account> getByAccountNumberResult = await _accountRepository.GetByAccountNumberAsync(accountNumber);
             if (getByAccountNumberResult.Succeeded == false)
             {
                 return new Result<decimal>()
@@ -45,7 +46,7 @@ namespace Logic
             account.Amount = account.Amount + amount;
 
             // Update the account
-            _accountRepository.UpdateAccount(account);
+            await _accountRepository.UpdateAccountAsync(account);
 
             // Return the updated balance of the account
             return new Result<decimal>()
@@ -55,9 +56,9 @@ namespace Logic
             };
         }
 
-        public Result<decimal> DepositAmount(string firstName, string lastName, int accountNumber, decimal amount)
+        public async Task<Result<decimal>> DepositAmount(string firstName, string lastName, int accountNumber, decimal amount)
         {
-            Result<Account> getByAccountNumberResult = _accountRepository.GetByAccountNumber(accountNumber);
+            Result<Account> getByAccountNumberResult = await _accountRepository.GetByAccountNumberAsync(accountNumber);
             if (getByAccountNumberResult.Succeeded == false)
             {
                 // Return Result<decimal>
@@ -70,7 +71,7 @@ namespace Logic
             }
             Account account = getByAccountNumberResult.Value;
 
-            Result<User> user = _userRepository.GetByUserName(account.UserName);
+            Result<BankUser> user = await _userRepository.GetByUserNameAsync(account.UserName);
             if (firstName != user.Value.FirstName || lastName != user.Value.LastName)
             {
                 return new Result<decimal>()
@@ -81,13 +82,13 @@ namespace Logic
                 };
             }
 
-            return DepositAmount(accountNumber, amount);
+            return await DepositAmount(accountNumber, amount);
         }
 
-        public Result<decimal> TransferAmount(int accountNumber, decimal amount)
+        public async Task<Result<decimal>> TransferAmount(int accountNumber, decimal amount)
         {
             // Get the account 
-            Result<Account> getByAccountNumberResult = _accountRepository.GetByAccountNumber(accountNumber);
+            Result<Account> getByAccountNumberResult = await _accountRepository.GetByAccountNumberAsync(accountNumber);
             if (getByAccountNumberResult.Succeeded == false)
             {
                 return new Result<decimal>()
@@ -111,7 +112,7 @@ namespace Logic
             }
 
             // Update the account
-            _accountRepository.UpdateAccount(account);
+            await _accountRepository.UpdateAccountAsync(account);
 
             // Return the updated balance of the account
             return new Result<decimal>()
@@ -121,7 +122,7 @@ namespace Logic
             };
         }
 
-        public Result<decimal> TransferAmount(int sourceAccountNumber, string sourcePin, int destAccountNumber, string destFirstName, string destLastName, decimal amount)
+        public async Task<Result<decimal>> TransferAmount(int sourceAccountNumber, string sourcePin, int destAccountNumber, string destFirstName, string destLastName, decimal amount)
         {
             // Validate the destination account information
             if (Validate(destFirstName, destLastName, destAccountNumber) == false)
@@ -135,7 +136,7 @@ namespace Logic
             }
 
             // A transfer is a combination of a withdraw and a deposit
-            Result<decimal> withDrawResult = WithdrawAmount(sourceAccountNumber, sourcePin, amount);
+            Result<decimal> withDrawResult = await WithdrawAmount (sourceAccountNumber, sourcePin, amount);
             if (withDrawResult.Succeeded == false)
             {
                 return new Result<decimal>()
@@ -146,7 +147,7 @@ namespace Logic
                 };
             }
 
-            Result<decimal> depositResult = DepositAmount(destFirstName, destLastName, destAccountNumber, amount);
+            Result<decimal> depositResult = await DepositAmount(destFirstName, destLastName, destAccountNumber, amount);
             if (depositResult.Succeeded == false)
             {
                 return new Result<decimal>()
@@ -160,10 +161,10 @@ namespace Logic
             return withDrawResult;
         }
 
-        public Result<decimal> WithdrawAmount(int accountNumber, decimal amount)
+        public async Task<Result<decimal>> WithdrawAmount(int accountNumber, decimal amount)
         {
             // Get the account
-            Result<Account> getByAccountNumberResult = _accountRepository.GetByAccountNumber(accountNumber);
+            Result<Account> getByAccountNumberResult = await _accountRepository.GetByAccountNumberAsync(accountNumber);
             if (getByAccountNumberResult.Succeeded == false)
             {
                 return new Result<decimal>()
@@ -190,7 +191,7 @@ namespace Logic
             account.Amount = account.Amount - amount;
 
             // Update the account
-            _accountRepository.UpdateAccount(account);
+            await _accountRepository.UpdateAccountAsync(account);
 
             // Return the updated balance of the account
             return new Result<decimal>()
@@ -200,10 +201,10 @@ namespace Logic
             };
         }
 
-        public Result<decimal> WithdrawAmount(int accountNumber, string pin, decimal amount)
+        public async Task<Result<decimal>> WithdrawAmount(int accountNumber, string pin, decimal amount)
         {
             // Verify the account number 
-            Result<Account> getByAccountNumberResult = _accountRepository.GetByAccountNumber(accountNumber);
+            Result<Account> getByAccountNumberResult = await _accountRepository.GetByAccountNumberAsync(accountNumber);
             if (getByAccountNumberResult.Succeeded == false)
             {
                 return new Result<decimal>()
@@ -224,20 +225,21 @@ namespace Logic
                     Message = "Incorrect Pin"
                 };
             }
-            return WithdrawAmount(accountNumber, amount);
+            return await WithdrawAmount(accountNumber, amount);
         }
 
-        private bool Validate(string firstName, string lastName, int accountNumber)
+        private async Task<bool> Validate(string firstName, string lastName, int accountNumber)
         {
-            Result<Account> getByAccountNumberResult = _accountRepository.GetByAccountNumber(accountNumber);
+            Result<Account> getByAccountNumberResult = await _accountRepository.GetByAccountNumberAsync(accountNumber);
             if (getByAccountNumberResult.Succeeded == false)
             {
                 Console.WriteLine("This account does not exist.");
                 return false;
             }
+
             Account account = getByAccountNumberResult.Value;
 
-            Result<User> user = _userRepository.GetByUserName(account.UserName);
+            Result<BankUser> user = await _userRepository.GetByUserNameAsync(account.UserName);
             if (firstName != user.Value.FirstName || lastName != user.Value.LastName)
             {
                 Console.WriteLine("The names do not match the account number.");
