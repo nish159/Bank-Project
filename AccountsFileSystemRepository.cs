@@ -176,7 +176,7 @@ namespace DataAccess
         public async Task<Result<Account>> UpdateAccountAsync(Account updatedAccount)
         {
             // Check if the account we want to update exists
-            Result<Account> getByAccountNumberResult = await GetByAccountNumberAsync(updatedAccount.Number);
+            Result<Account> getByAccountNumberResult = await GetByAccountNumberAsync (updatedAccount.Number);
             if (getByAccountNumberResult.Succeeded == false)
             {
                 return getByAccountNumberResult;
