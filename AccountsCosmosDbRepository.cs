@@ -48,7 +48,7 @@ namespace DataAccess
             }
 
             // Create and item. Partition key value and id must be provided in order to create
-            ItemResponse<Account> itemResponse = await _container.CreateItemAsync<Account>(account, new PartitionKey(account.Id));
+            ItemResponse<Account> itemResponse = await _container.CreateItemAsync<Account>(account, new PartitionKey(account.UserName));
 
             // Check if the cosmos operation was successful or not. Create returns 204 No Content when successful
             if (itemResponse.StatusCode == System.Net.HttpStatusCode.Created)
