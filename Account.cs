@@ -1,5 +1,6 @@
 namespace Models
 {
+    using Newtonsoft.Json;
     using System;
 
     /// <summary>
@@ -13,6 +14,10 @@ namespace Models
         /// The document identifier is used for document-based repositories and is the string
         /// representation of the user id.
         /// </summary>
+        /// Tell the serializer that this field should be named "id" in the json document.
+        /// Tell the deserializer that a field named "id" in the json document should map to this property.
+        /// This is required because the Id field in cosmos db is id (lower case)
+        [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
 
         /// <summary>
