@@ -46,7 +46,14 @@ namespace Logic
             account.Amount = account.Amount + amount;
 
             // Update the account
-            await _accountRepository.UpdateAccountAsync(account);
+            Result<Account> updateResult =await _accountRepository.UpdateAccountAsync(account);
+            if(updateResult.Succeeded == false)
+            {
+                return new Result<decimal>()
+                {
+                    Succeeded = true
+                };
+            }
 
             // Return the updated balance of the account
             return new Result<decimal>()
