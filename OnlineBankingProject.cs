@@ -31,7 +31,7 @@ namespace OnlineBankingProject
             Console.WriteLine("Please enter your username: ");
             userName = Console.ReadLine();
 
-            Result<BankUser> user = _userRepository.GetByUserNameAsync(userName);
+            Result<BankUser> user = _userRepository.GetByUserNameAsync(userName).Result;
 
             if (user.Succeeded == false)
             {
@@ -154,7 +154,7 @@ namespace OnlineBankingProject
             accountNumber = int.Parse(Console.ReadLine());
 
             // Verify the account number
-            Result<Account> account = _accountRepository.GetByAccountNumberAsync(accountNumber).re;
+            Result<Account> account = _accountRepository.GetByAccountNumberAsync(accountNumber).Result;
 
             if (account == null)
             {
@@ -191,7 +191,7 @@ namespace OnlineBankingProject
             depositAmount = decimal.Parse(Console.ReadLine());
 
             // Call deposit function
-            _accountLogic.DepositAmount(firstName, lastName, accountNumber, depositAmount);
+            _accountLogic.DepositAmount(firstName, lastName, accountNumber, depositAmount).Wait();
             return;
         }
 
@@ -282,7 +282,7 @@ namespace OnlineBankingProject
             Console.WriteLine("\nPlease enter the last name of the account holder: ");
             lastName = Console.ReadLine();
 
-            _accountLogic.TransferAmount(sourceAccount, pin, destinationAccount, firstName, lastName, transferAmount);
+            _accountLogic.TransferAmount(sourceAccount, pin, destinationAccount, firstName, lastName, transferAmount).Wait();
             return;
         }
 
