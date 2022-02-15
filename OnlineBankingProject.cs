@@ -18,6 +18,31 @@ namespace OnlineBankingProject
 
         static void Main(string[] args)
         {
+            signIn();
+        }
+
+        static private void PrintUsers(List<BankUser> users)
+        {
+            Console.WriteLine($"Number of users: {users.Count}");
+            foreach (BankUser user in users)
+            {
+                Console.WriteLine($"Id: {user.Id} UserName: {user.UserName}, FirstName: {user.FirstName}, LastName: {user.LastName}");
+            }
+            Console.WriteLine("");
+        }
+
+        static private void PrintAccounts(List<Account> accounts)
+        {
+            Console.WriteLine($"Number of accounts: {accounts.Count}");
+            foreach (Account account in accounts)
+            {
+                Console.WriteLine($"UserName: {account.UserName}, Number: {account.Number}, Amount: {account.Amount}");
+            }
+            Console.WriteLine("");
+        }
+
+        static void signIn()
+        {
             IServiceProvider serviceProvider = ConfigureSerivces();
 
             _userRepository = serviceProvider.GetRequiredService<IUserRepository>();
@@ -28,21 +53,23 @@ namespace OnlineBankingProject
             string password = "";
 
             // Ask for the username and verify
-            Console.WriteLine("Please enter your username: ");
+            Console.WriteLine("Welcome to CyberBank. Please sign in.");
+            Console.WriteLine("----------------------------------------");
+            Console.WriteLine("Enter your username: ");
             userName = Console.ReadLine();
 
             Result<BankUser> user = _userRepository.GetByUserNameAsync(userName).Result;
 
             if (user.Succeeded == false)
             {
-                Console.WriteLine("This user does not exist.");
+                Console.WriteLine("This user does not exist in our system.");
                 return;
             }
 
             // Ask for the password and verify
             while (password != user.Value.Password)
             {
-                Console.WriteLine("\nPlease enter your password: ");
+                Console.WriteLine("\nEnter your password: ");
                 password = Console.ReadLine();
 
                 // generate a 128-bit salt using a cryptographically strong random sequence of nonzero values
@@ -74,26 +101,6 @@ namespace OnlineBankingProject
             }
         }
 
-        static private void PrintUsers(List<BankUser> users)
-        {
-            Console.WriteLine($"Number of users: {users.Count}");
-            foreach (BankUser user in users)
-            {
-                Console.WriteLine($"Id: {user.Id} UserName: {user.UserName}, FirstName: {user.FirstName}, LastName: {user.LastName}");
-            }
-            Console.WriteLine("");
-        }
-
-        static private void PrintAccounts(List<Account> accounts)
-        {
-            Console.WriteLine($"Number of accounts: {accounts.Count}");
-            foreach (Account account in accounts)
-            {
-                Console.WriteLine($"UserName: {account.UserName}, Number: {account.Number}, Amount: {account.Amount}");
-            }
-            Console.WriteLine("");
-        }
-
         static void mainMenu(string userName)
         {
             while (true)
@@ -114,6 +121,8 @@ namespace OnlineBankingProject
                 Console.WriteLine("5. View All Accounts");
                 Console.WriteLine("------------------------------");
                 Console.WriteLine("6. Terminate Transaction");
+                Console.WriteLine("------------------------------");
+                Console.WriteLine("7. Log Out");
                 Console.WriteLine("------------------------------\n");
 
                 int options = int.Parse(Console.ReadLine());
@@ -138,6 +147,9 @@ namespace OnlineBankingProject
                     case 6:
                         exit();
                         return;
+                    case 7:
+                        signOut();
+                        return;
                     default:
                         Console.WriteLine("This is not a valid option.");
                         return;
@@ -158,7 +170,7 @@ namespace OnlineBankingProject
 
             if (account == null)
             {
-                Console.WriteLine("This account does not exist.");
+                Console.WriteLine("This account does not exist in our system.");
                 return;
             }
 
@@ -175,19 +187,19 @@ namespace OnlineBankingProject
             decimal depositAmount;
 
             // Ask for the account number 
-            Console.WriteLine("Please enter your account number: ");
+            Console.WriteLine("Enter your account number: ");
             accountNumber = int.Parse(Console.ReadLine());
 
             // Ask for the first name 
-            Console.WriteLine("Please enter your first name: ");
+            Console.WriteLine("Enter your first name: ");
             firstName = Console.ReadLine();
 
             // Ask for the last name 
-            Console.WriteLine("Please enter your last name: ");
+            Console.WriteLine("Enter your last name: ");
             lastName = Console.ReadLine();
 
             // Ask for the amount 
-            Console.WriteLine("Please enter the deposit amount: ");
+            Console.WriteLine("Enter the amount you want to deposit: ");
             depositAmount = decimal.Parse(Console.ReadLine());
 
             // Call deposit function
@@ -202,21 +214,21 @@ namespace OnlineBankingProject
             string pin = "";
 
             // Ask for the account number 
-            Console.WriteLine("Please enter your account number: ");
+            Console.WriteLine("Enter your account number: ");
             accountNumber = int.Parse(Console.ReadLine());
 
             // Ask for pin
-            Console.WriteLine("Please enter your pin: ");
+            Console.WriteLine("Enter your pin: ");
             pin = Console.ReadLine();
 
             // Ask for withdraw amount
-            Console.WriteLine("How much would you like to withdraw? ");
+            Console.WriteLine("Select a withdraw option: ");
             Console.WriteLine("1. $20");
             Console.WriteLine("2. $40");
             Console.WriteLine("3. $60");
             Console.WriteLine("4. $80");
             Console.WriteLine("5. $100");
-            Console.WriteLine("6. Enter your amount");
+            Console.WriteLine("6. Enter an amount.");
 
             int withdrawOption = int.Parse(Console.ReadLine());
 
@@ -243,11 +255,11 @@ namespace OnlineBankingProject
                     exit();
                     break;
                 case 6:
-                    Console.WriteLine("Please enter an amount: ");
+                    Console.WriteLine("Enter the amount you want to withdraw: ");
                     withdrawAmount = decimal.Parse(Console.ReadLine());
                     break;
                 default:
-                    Console.WriteLine("Invalid Option!");
+                    Console.WriteLine("This is an invalid option.");
                     return;
             }
 
@@ -267,19 +279,19 @@ namespace OnlineBankingProject
             Console.WriteLine("Enter the account number you want to transfer from: ");
             sourceAccount = int.Parse(Console.ReadLine());
 
-            Console.WriteLine("\nPlease enter your pin: ");
+            Console.WriteLine("\nEnter your pin: ");
             pin = Console.ReadLine();
 
-            Console.WriteLine("\nPlease enter the amount you are transferring: ");
+            Console.WriteLine("\nEnter the amount you are transferring: ");
             transferAmount = decimal.Parse(Console.ReadLine());
 
-            Console.WriteLine("\nPlease enter the account you want to transfer to: ");
+            Console.WriteLine("\nEnter the number of the account you want to transfer to: ");
             destinationAccount = int.Parse(Console.ReadLine());
 
-            Console.WriteLine("\nPlease enter the first name of the account holder: ");
+            Console.WriteLine("\nEnter the first name of the account holder: ");
             firstName = Console.ReadLine();
 
-            Console.WriteLine("\nPlease enter the last name of the account holder: ");
+            Console.WriteLine("\nEnter the last name of the account holder: ");
             lastName = Console.ReadLine();
 
             _accountLogic.TransferAmount(sourceAccount, pin, destinationAccount, firstName, lastName, transferAmount).Wait();
@@ -291,6 +303,12 @@ namespace OnlineBankingProject
             Result<List<Account>> accounts = _accountRepository.GetAllByUsernameAsync(userName).Result;
 
             PrintAccounts(accounts.Value);   
+        }
+
+        static void signOut()
+        {
+            Console.WriteLine("You have been signed out.\n");
+            signIn();
         }
 
         static void exit()
