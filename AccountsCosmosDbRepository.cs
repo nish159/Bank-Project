@@ -96,7 +96,7 @@ namespace DataAccess
             }
 
             // Delete an item. Partition key value and id must be provided in order to delete
-            ItemResponse<Account> itemResponse = await _container.DeleteItemAsync<Account>(deletedAccount.UserName, new PartitionKey(deletedAccount.UserName));
+            ItemResponse<Account> itemResponse = await _container.DeleteItemAsync<Account>(deletedAccount.Id, new PartitionKey(deletedAccount.UserName));
 
             // Check if the cosmos operation was successful or not. Delete returns 204 No Content when successful
             if(itemResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
