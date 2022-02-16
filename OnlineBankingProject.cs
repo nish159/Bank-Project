@@ -18,6 +18,12 @@ namespace OnlineBankingProject
 
         static void Main(string[] args)
         {
+            IServiceProvider serviceProvider = ConfigureSerivces();
+
+            _userRepository = serviceProvider.GetRequiredService<IUserRepository>();
+            _accountRepository = serviceProvider.GetRequiredService<IAccountRepository>();
+            _accountLogic = serviceProvider.GetRequiredService<IAccountLogic>();
+
             signIn();
         }
 
@@ -43,12 +49,6 @@ namespace OnlineBankingProject
 
         static void signIn()
         {
-            IServiceProvider serviceProvider = ConfigureSerivces();
-
-            _userRepository = serviceProvider.GetRequiredService<IUserRepository>();
-            _accountRepository = serviceProvider.GetRequiredService<IAccountRepository>();
-            _accountLogic = serviceProvider.GetRequiredService<IAccountLogic>();
-
             string userName;
             string password = "";
 
