@@ -75,7 +75,7 @@ namespace DataAccess
         /// </summary>
         /// <param name="userName">Unique user identifier</param>
         /// <returns>The <see cref="BankUser"/> with the given user name, or null if no user exists with that user name</returns>
-        Task<Result<BankUser>> GetByUserName(string userName);
+        Task<Result<BankUser>> GetByUserNameAsync(string userName);
 
         /// <summary>
         /// Gets the user with the given user id
