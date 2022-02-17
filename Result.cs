@@ -33,5 +33,6 @@ namespace Bank
         public const string NotFound = "NotFound";
         public const string InvalidData = "InvalidData";
         public const string Duplicate = "Duplicate";
+        public const string DataStoreError = "DataStoreError";
     }
 }
