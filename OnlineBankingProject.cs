@@ -50,7 +50,7 @@ namespace OnlineBankingProject
         static void signIn()
         {
             string userName;
-            string password = "";
+            string password = String.Empty;
 
             // Ask for the username and verify
             Console.WriteLine("Welcome to CyberBank. Please sign in.");
@@ -66,11 +66,29 @@ namespace OnlineBankingProject
                 return;
             }
 
+            Console.WriteLine("\nEnter your password: ");
+            ConsoleKey key;
+
             // Ask for the password and verify
             while (password != user.Value.Password)
             {
-                Console.WriteLine("\nEnter your password: ");
-                password = Console.ReadLine();
+
+                do
+                {   
+                    ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
+                    key = keyInfo.Key;
+
+                    if (key == ConsoleKey.Backspace && password.Length > 0)
+                    {
+                        Console.Write("\b \b");
+                        password = password[0..^1];
+                    }
+                    else if (!char.IsControl(keyInfo.KeyChar))
+                    {
+                        Console.Write("*");
+                        password += keyInfo.KeyChar;
+                    }
+                } while (key != ConsoleKey.Enter);
 
                 // generate a 128-bit salt using a cryptographically strong random sequence of nonzero values
                 byte[] salt = new byte[128 / 8];
@@ -78,7 +96,7 @@ namespace OnlineBankingProject
                 {
                     rngCsp.GetNonZeroBytes(salt);
                 }
-                Console.WriteLine($"Salt: {Convert.ToBase64String(salt)}");
+                Console.WriteLine($"\nSalt: {Convert.ToBase64String(salt)}");
 
                 // derive a 256-bit subkey (use HMACSHA256 with 100,000 iterations)
                 string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
@@ -97,6 +115,7 @@ namespace OnlineBankingProject
                 else
                 {
                     Console.WriteLine("\nIncorrect Password. Please try again: ");
+                    password = String.Empty;
                 }
             }
         }
