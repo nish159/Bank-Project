@@ -1,0 +1,14 @@
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\bin\Debug\net6.0\Microsoft.Azure.Cosmos.ServiceInterop.dll
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\bin\Debug\net6.0\Cosmos.CRTCompat.dll
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\bin\Debug\net6.0\OnlineBankingProject.Common.deps.json
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\bin\Debug\net6.0\OnlineBankingProject.Common.dll
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\bin\Debug\net6.0\OnlineBankingProject.Common.pdb
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\obj\Debug\net6.0\OnlineBankingProject.Common.csproj.AssemblyReference.cache
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\obj\Debug\net6.0\OnlineBankingProject.Common.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\obj\Debug\net6.0\OnlineBankingProject.Common.AssemblyInfoInputs.cache
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\obj\Debug\net6.0\OnlineBankingProject.Common.AssemblyInfo.cs
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\obj\Debug\net6.0\OnlineBankingProject.Common.csproj.CoreCompileInputs.cache
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\obj\Debug\net6.0\OnlineBankingProject.Common.dll
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\obj\Debug\net6.0\refint\OnlineBankingProject.Common.dll
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\obj\Debug\net6.0\OnlineBankingProject.Common.pdb
+C:\Users\nishriddick.NORTHAMERICA\source\repos\BankingProject\obj\Debug\net6.0\ref\OnlineBankingProject.Common.dll
