@@ -12,7 +12,6 @@ namespace OnlineBankingProject
 
     class OnlineBankingProject
     {
-        /*
         private static IUserRepository _userRepository;
         private static IAccountRepository _accountRepository;
         private static IAccountLogic _accountLogic;
@@ -354,6 +353,5 @@ namespace OnlineBankingProject
             IServiceProvider serviceProvider = services.BuildServiceProvider();
             return serviceProvider;
         }
-        */
     }
 }
