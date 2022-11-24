@@ -3,6 +3,7 @@ namespace DataAccess
     using Bank;
     using Microsoft.Azure.Cosmos;
     using Models;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
@@ -45,6 +46,9 @@ namespace DataAccess
                     ResultType = ResultType.InvalidData
                 };
             }
+            
+            // Set read only properties
+            user.Id = Guid.NewGuid().ToString();
 
             // Create and item. Partition key value and id must be provided in order to create
             ItemResponse<BankUser> itemResponse = await _container.CreateItemAsync<BankUser>(user, new PartitionKey(user.UserName));
