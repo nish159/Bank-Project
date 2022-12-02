@@ -52,5 +52,11 @@ namespace DataAccess
         /// </summary>
         /// <param name="deletedAccount">The account to be deleted</param>
         Task<Result<Account>> DeleteAccountAsync(Account deletedAccount);
+
+        /// Deletes the specified account data entity
+        /// </summary>
+        /// <param name="id">Id of the account to be deleted</param>
+        /// <param name="userName">Username of the user who is associated with the account to be deleted</param>
+        Task<Result<Account>> DeleteAccountAsync(string id, string userName);
     }
 }
