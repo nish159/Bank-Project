@@ -99,7 +99,7 @@ namespace DataAccess
             }
 
             // Verify that no other user has the updated username
-            ItemResponse<BankUser> getUserResponse = await _container.ReadItemAsync<BankUser>(updatedUser.UserName, new PartitionKey(updatedUser.UserName));
+            ItemResponse<BankUser> getUserResponse = await _container.ReadItemAsync<BankUser>(updatedUser.Id, new PartitionKey(updatedUser.UserName));
             if(getUserResponse.StatusCode == System.Net.HttpStatusCode.OK) // there is a user in the system with the user name
             {
                 BankUser existingUser = getUserResponse.Resource;
