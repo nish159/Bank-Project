@@ -83,5 +83,11 @@ namespace DataAccess
         /// <param name="id">Unique user identifier</param>
         /// <returns>The <see cref="BankUser"/> with the given id, or null if no user exists with that id</returns>
         Task<Result<BankUser>> GetByIdAsync(string id);
+
+        /// Deletes the specified account data entity
+        /// </summary>
+        /// <param name="id">Id of the user to be deleted</param>
+        /// <param name="userName">Username of the user who is associated with the account to be deleted</param>
+        Task<Result<BankUser>> DeleteUserAsync(string userName, string id);
     }
 }
