@@ -46,7 +46,7 @@ namespace DataAccess
                     ResultType = ResultType.InvalidData
                 };
             }
-            
+
             // Set read only properties
             user.Id = Guid.NewGuid().ToString();
 
@@ -505,6 +505,47 @@ namespace DataAccess
             {
                 Succeeded = true,
                 Value = user
+            };
+        }
+
+        public async Task<Result<BankUser>> DeleteUserAsync(string userName, string id)
+        {
+            if (id == null && userName == null)
+            {
+                return new Result<BankUser>
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData
+                };
+            }
+
+            // Delete an item. Partition key value and id must be provided in order to delete
+            ItemResponse<BankUser> itemResponse = await _container.DeleteItemAsync<BankUser>(id, new PartitionKey(userName));
+
+            // Check if the cosmos operation was successful or not. Delete returns 204 No Content when successful
+            if (itemResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return new Result<BankUser>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound
+                };
+            }
+
+            if (itemResponse.StatusCode != System.Net.HttpStatusCode.NoContent)
+            {
+                return new Result<BankUser>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.DataStoreError
+                };
+            }
+
+            // The query returned a list of accounts
+            return new Result<BankUser>()
+            {
+                Succeeded = true,
+                Value = null
             };
         }
     }
