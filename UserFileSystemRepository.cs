@@ -326,5 +326,10 @@ namespace DataAccess
                 Value = user
             };
         }
+
+        public Task<Result<BankUser>> DeleteUserAsync(string userName, string id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
