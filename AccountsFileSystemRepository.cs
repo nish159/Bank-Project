@@ -76,6 +76,11 @@ namespace DataAccess
             };
         }
 
+        public Task<Result<Account>> DeleteAccountAsync(string id, string userName)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Gets a list of all accounts in the system
         /// </summary>
