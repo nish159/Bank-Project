@@ -325,5 +325,46 @@ namespace DataAccess
                 Value = account
             };
         }
+
+        public async Task<Result<Account>> DeleteAccountAsync(string id, string userName)
+        {
+            if (id == null && userName == null)
+            {
+                return new Result<Account>
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData
+                };
+            }
+
+            // Delete an item. Partition key value and id must be provided in order to delete
+            ItemResponse<Account> itemResponse = await _container.DeleteItemAsync<Account>(id, new PartitionKey(userName));
+
+            // Check if the cosmos operation was successful or not. Delete returns 204 No Content when successful
+            if (itemResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound
+                };
+            }
+
+            if (itemResponse.StatusCode != System.Net.HttpStatusCode.NoContent)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.DataStoreError
+                };
+            }
+
+            // The query returned a list of accounts
+            return new Result<Account>()
+            {
+                Succeeded = true,
+                Value = null
+            };
+        }
     }
 }
