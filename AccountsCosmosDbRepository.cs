@@ -297,7 +297,7 @@ namespace DataAccess
         public async Task<Result<Account>> GetByIdAsync(string id)
         {
             // Building the sql query
-            string sqlQueryText = $"SELECT * FROM c WHERE c.Id = \"{id}\"";
+            string sqlQueryText = $"SELECT * FROM c WHERE c.id = \"{id}\"";
             QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
 
             // Querying the container
@@ -313,7 +313,8 @@ namespace DataAccess
                 return new Result<Account>()
                 {
                     Succeeded = false,
-                    ResultType = ResultType.NotFound
+                    ResultType = ResultType.NotFound,
+                    Message = $"Unable to get account with id ={id}. Account not found"
                 };
             }
 
@@ -333,7 +334,22 @@ namespace DataAccess
                 return new Result<Account>
                 {
                     Succeeded = false,
-                    ResultType = ResultType.InvalidData
+                    ResultType = ResultType.InvalidData,
+                    Message = $"Invaid or missing parameters"
+                };
+            }
+
+            // Get the account we want to delete
+            Result<Account> getResult = await GetByIdAsync(id);
+
+            if (getResult.Succeeded == false)
+            {
+                string message = $"Unable to delete account with id={id} and user name={userName}. Reason={getResult.Message}";
+                return new Result<Account>
+                {
+                    Succeeded = false,
+                    ResultType = getResult.ResultType,
+                    Message = message
                 };
             }
 
@@ -346,7 +362,8 @@ namespace DataAccess
                 return new Result<Account>()
                 {
                     Succeeded = false,
-                    ResultType = ResultType.NotFound
+                    ResultType = ResultType.NotFound,
+                    Message = $"Unable to delete account with id={id} and user name={userName}. Account not found."
                 };
             }
 
@@ -355,15 +372,16 @@ namespace DataAccess
                 return new Result<Account>()
                 {
                     Succeeded = false,
-                    ResultType = ResultType.DataStoreError
+                    ResultType = ResultType.DataStoreError,
+                    Message = $"Unable to delete account with id={id} and user name={userName} due to data store errors."
                 };
             }
 
-            // The query returned a list of accounts
+            // Return the account that got deleted
             return new Result<Account>()
             {
                 Succeeded = true,
-                Value = null
+                Value = getResult.Value
             };
         }
     }
