@@ -314,7 +314,7 @@ namespace DataAccess
                 {
                     Succeeded = false,
                     ResultType = ResultType.NotFound,
-                    Message = $"Unable to get account with id ={id}. Account not found"
+                    Message = $"Unable to get account with id ={id}. Account not found."
                 };
             }
 
