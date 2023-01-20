@@ -1,9 +1,9 @@
 namespace DataAccess
 {
     using System.Collections.Generic;
-    using Models;
     using Bank;
     using System.Threading.Tasks;
+    using OnlineBankingProject.Common.Models;
 
     public interface IAccountRepository
     {
@@ -33,7 +33,7 @@ namespace DataAccess
         /// </summary>
         /// <param name="id">Unique account identifier</param>
         /// <returns>The <see cref="Account"/> with the given id, or null if no account exists with that id</returns>
-        Task<Result<Account>> GetByIdAsync(string userName);
+        Task<Result<Account>> GetByIdAsync(string id);
 
         /// <summary>
         /// Creates a new account data entity
