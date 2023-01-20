@@ -2,7 +2,7 @@ namespace Logic
 {
     using Bank;
     using DataAccess;
-    using Models;
+    using OnlineBankingProject.Common.Models;
     using System;
     using System.Threading.Tasks;
     public class AccountLogic : IAccountLogic
@@ -14,6 +14,88 @@ namespace Logic
         {
             _accountRepository = accountRepository;
             _userRepository = userRepository;
+        }
+
+        /// <summary>
+        /// Withdraws the given amount from the given account
+        /// </summary>
+        /// <param name="accountId">Identifier of the account we want to withdraw money from</param>
+        /// <param name="pin">The pin of the account the amount should be withdrawn from</param>
+        /// <param name="amount">The amount to be withdrawn from the account</param>
+        /// <returns>The account after the withdraw</returns>
+        public async Task<Result<Account>> WithdrawAmount(string accountId, string pin, decimal amount)
+        {
+            // Verify the input parameters
+            if (string.IsNullOrWhiteSpace(accountId))
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = "Invalid or missing 'accountId' parameter"
+                };
+            }
+            if (string.IsNullOrWhiteSpace(pin))
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = "Invalid or missing 'pin' parameter"
+                };
+            }
+            if (amount <= 0)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = "Invalid or missing 'amount' parameter. Amount must be greater than 0"
+                };
+            }
+
+            // Get the account
+            Result<Account> getAccountResult = await _accountRepository.GetByIdAsync(accountId);
+            if (getAccountResult.Succeeded == false)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound,
+                    Message = $"Unable to withdraw {amount} from account {accountId} - account does not exist."
+                };
+            }
+
+            Account account = getAccountResult.Value;
+
+            // Verify that the pin is correct
+            if (account.Pin != pin)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = $"Unable to withdraw {amount} from account {accountId} - invalid pin"
+                };
+            }
+
+            // Verify that we have enough balance on the account
+            if (account.Amount < amount)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound,
+                    Message = $"Unable to withdraw {amount} from account {accountId} - not enough balance, account balance {account.Amount}."
+                };
+            }
+
+            // Modify the balance of the account
+            account.Amount = account.Amount - amount;
+
+            // Update the account
+            Result<Account> updateResult = await _accountRepository.UpdateAccountAsync(account);
+            return updateResult;
         }
 
         public async Task<Result<decimal>> DepositAmount(int accountNumber, decimal amount)
