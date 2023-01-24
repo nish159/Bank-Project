@@ -2,7 +2,7 @@ namespace DataAccess
 {
     using Bank;
     using Microsoft.Azure.Cosmos;
-    using Models;
+    using OnlineBankingProject.Common.Models;
     using System;
     using System.Collections.Generic;
     using System.Linq;
