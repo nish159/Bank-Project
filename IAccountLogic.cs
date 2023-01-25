@@ -29,6 +29,15 @@ namespace Logic
         
         Task<Result<decimal>> DepositAmount(int accountNumber, decimal amount);
 
+        /// <summary>
+        /// Withdraws the given amount from the given account
+        /// </summary>
+        /// <param name="accountId">Identifier of the account we want to deposit money into</param>
+        /// <param name="amount">The amount to be deposited into the account</param>
+        /// <param name="accountNumber">The account we want to deposit money into</param>
+        /// <returns>The account after the deposit</returns>
+        Task<Result<Account>> DepositAmount(string accountId, decimal amount, int accountNumber);
+
         Task<Result<decimal>> TransferAmount(int sourceAccountNumber, string sourcePin, int destAccountNumber, string destFirstName, string destLastName, decimal amount);
     }
 }
