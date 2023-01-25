@@ -174,6 +174,70 @@ namespace Logic
             return await DepositAmount(accountNumber, amount);
         }
 
+        /// <summary>
+        /// Withdraws the given amount from the given account
+        /// </summary>
+        /// <param name="accountId">Identifier of the account we want to deposit money into</param>
+        /// <param name="amount">The amount to be deposited into the account</param>
+        /// <param name="firstName">FirstName identifier of the account we want to deposit money into</param>
+        /// <param name="lastName">LastName identifier of the account we want to deposit money into</param>
+        /// <returns>The account after the deposit</returns>
+        public async Task<Result<Account>> DepositAmount(string accountId, decimal amount, int accountNumber)
+        {
+            // Verify the input parameters
+            if (string.IsNullOrWhiteSpace(accountId))
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = "Invalid or missing 'accountId' parameter"
+                };
+            }
+            
+            if (amount <= 0)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = "Invalid or missing 'amount' parameter. Amount must be greater than 0"
+                };
+            }
+
+            // Get the account
+            Result<Account> getAccountResult = await _accountRepository.GetByIdAsync(accountId);
+            if (getAccountResult.Succeeded == false)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.NotFound,
+                    Message = $"Unable to deposit {amount} into account {accountId} - account does not exist."
+                };
+            }
+
+            Account account = getAccountResult.Value;
+
+            // Verify that the pin is correct
+            if (account.Number != accountNumber)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = $"Unable to deposit {amount} into account {accountId} - invalid account number"
+                };
+            }
+
+            // Modify the balance of the account
+            account.Amount = account.Amount + amount;
+
+            // Update the account
+            Result<Account> updateResult = await _accountRepository.UpdateAccountAsync(account);
+            return updateResult;
+        }
+
         public async Task<Result<decimal>> TransferAmount(int accountNumber, decimal amount)
         {
             // Get the account 
