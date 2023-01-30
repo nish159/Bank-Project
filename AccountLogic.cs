@@ -98,13 +98,13 @@ namespace Logic
             return updateResult;
         }
 
-        public async Task<Result<decimal>> DepositAmount(int accountNumber, decimal amount)
+        public async Task<Result<Account>> DepositAmount(int accountNumber, decimal amount)
         {
             // Get the account
             Result<Account> getByAccountNumberResult = await _accountRepository.GetByAccountNumberAsync(accountNumber);
             if (getByAccountNumberResult.Succeeded == false)
             {
-                return new Result<decimal>()
+                return new Result<Account>()
                 {
                     Succeeded = false,
                     ResultType = getByAccountNumberResult.ResultType,
@@ -113,45 +113,16 @@ namespace Logic
             }
             Account account = getByAccountNumberResult.Value;
 
-            // Verify the amount you are depositing 
-            if (amount < 0)
-            {
-                return new Result<decimal>()
-                {
-                    Succeeded = false,
-                    ResultType = ResultType.InvalidData,
-                    Message = $"Unable to deposit {amount} from account {accountNumber} - Invalid amount."
-                };
-            }
-
-            // Modify the balance of the account
-            account.Amount = account.Amount + amount;
-
-            // Update the account
-            Result<Account> updateResult =await _accountRepository.UpdateAccountAsync(account);
-            if(updateResult.Succeeded == false)
-            {
-                return new Result<decimal>()
-                {
-                    Succeeded = true
-                };
-            }
-
-            // Return the updated balance of the account
-            return new Result<decimal>()
-            {
-                Succeeded = true,
-                Value = account.Amount
-            };
+            return await DepositAmount(account.Id, amount, account.Number);
         }
 
-        public async Task<Result<decimal>> DepositAmount(string firstName, string lastName, int accountNumber, decimal amount)
+        public async Task<Result<Account>> DepositAmount(string firstName, string lastName, int accountNumber, decimal amount)
         {
             Result<Account> getByAccountNumberResult = await _accountRepository.GetByAccountNumberAsync(accountNumber);
             if (getByAccountNumberResult.Succeeded == false)
             {
                 // Return Result<decimal>
-                return new Result<decimal>()
+                return new Result<Account>()
                 {
                     Succeeded = false,
                     ResultType = getByAccountNumberResult.ResultType,
@@ -163,7 +134,7 @@ namespace Logic
             Result<BankUser> user = await _userRepository.GetByUserNameAsync(account.UserName);
             if (firstName != user.Value.FirstName || lastName != user.Value.LastName)
             {
-                return new Result<decimal>()
+                return new Result<Account>()
                 {
                     Succeeded = false,
                     ResultType = ResultType.NotFound,
@@ -300,10 +271,49 @@ namespace Logic
                 };
             }
 
-            Result<decimal> depositResult = await DepositAmount(destFirstName, destLastName, destAccountNumber, amount);
+            Result<Account> depositResult = await DepositAmount(destFirstName, destLastName, destAccountNumber, amount);
             if (depositResult.Succeeded == false)
             {
                 return new Result<decimal>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = $"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}"
+                };
+            }
+
+            return withDrawResult;
+        }
+
+        public async Task<Result<Account>> TransferAmount(string id, int sourceAccountNumber, string sourcePin, int destAccountNumber, decimal amount)
+        {
+            // Validate the destination account information
+            if (await Validate(destAccountNumber) == false)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = $"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}"
+                };
+            }
+
+            // A transfer is a combination of a withdraw and a deposit
+            Result<Account> withDrawResult = await WithdrawAmount(id, sourcePin, amount);
+            if (withDrawResult.Succeeded == false)
+            {
+                return new Result<Account>()
+                {
+                    Succeeded = false,
+                    ResultType = ResultType.InvalidData,
+                    Message = $"Unable to transfer {amount} from {sourceAccountNumber} to {destAccountNumber}"
+                };
+            }
+
+            Result<Account> depositResult = await DepositAmount(destAccountNumber, amount);
+            if (depositResult.Succeeded == false)
+            {
+                return new Result<Account>()
                 {
                     Succeeded = false,
                     ResultType = ResultType.InvalidData,
@@ -398,6 +408,18 @@ namespace Logic
                 Console.WriteLine("The names do not match the account number.");
                 return false;
             }
+            return true;
+        }
+
+        private async Task<bool> Validate(int accountNumber)
+        {
+            Result<Account> getByAccountNumberResult = await _accountRepository.GetByAccountNumberAsync(accountNumber);
+            if (getByAccountNumberResult.Succeeded == false)
+            {
+                Console.WriteLine("This account does not exist.");
+                return false;
+            }
+
             return true;
         }
     }
